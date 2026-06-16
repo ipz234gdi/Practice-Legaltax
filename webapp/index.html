@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0e27">
+  <meta name="description" content="LegalTax — бухгалтерські та юридичні послуги для ФОП та бізнесу">
+  <title>LegalTax App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- ===== HEADER ===== -->
+    <header class="app-header">
+      <span class="logo">LegalTax</span>
+      <span class="subtitle">Бухгалтерія & Право</span>
+    </header>
+
+    <!-- ===== CONTENT ===== -->
+    <main class="app-content">
+
+      <!-- ————— HOME PAGE ————— -->
+      <section class="page active" id="page-home">
+
+        <div class="hero-card">
+          <div class="hero-greeting">Вітаємо 👋</div>
+          <h1 class="hero-title" id="hero-name">Раді бачити вас!</h1>
+          <p class="hero-description">
+            Ваш особистий помічник з бухгалтерських та юридичних питань. Оберіть потрібну дію нижче.
+          </p>
+        </div>
+
+        <div class="action-grid">
+          <div class="action-card" onclick="navigateTo('form')">
+            <span class="card-icon">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </span>
+            <span class="card-title">Залишити заявку</span>
+          </div>
+          <div class="action-card" onclick="navigateTo('requests')">
+            <span class="card-icon">
+              <svg class="svg-icon" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+            </span>
+            <span class="card-title">Мої заявки</span>
+          </div>
+          <div class="action-card" onclick="navigateTo('calculator')">
+            <span class="card-icon">
+              <svg class="svg-icon" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 17v-6M15 17V7M12 17v-4"/></svg>
+            </span>
+            <span class="card-title">Калькулятор податків</span>
+          </div>
+          <div class="action-card" onclick="scrollToAbout()">
+            <span class="card-icon">
+              <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            </span>
+            <span class="card-title">Про LegalTax</span>
+          </div>
+          <div class="action-card" id="card-admin" onclick="navigateTo('admin')" style="display:none;">
+            <span class="card-icon">
+              <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </span>
+            <span class="card-title">Панель адміна</span>
+          </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- About section integrated into home -->
+        <div id="about-section">
+          <h2 class="page-title">Про нас</h2>
+          <div class="info-cards">
+            <div class="info-card">
+              <span class="info-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 3v17M12 20H4M12 20h8M19 9l-7-3-7 3M5 9c0 4 3 7 7 7s7-3 7-7"/></svg>
+              </span>
+              <div class="info-content">
+                <div class="info-title">Юридичні послуги</div>
+                <div class="info-text">Реєстрація ФОП, ТОВ, ліцензування, договори та правовий супровід бізнесу.</div>
+              </div>
+            </div>
+            <div class="info-card">
+              <span class="info-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
+              </span>
+              <div class="info-content">
+                <div class="info-title">Бухгалтерський облік</div>
+                <div class="info-text">Ведення обліку, подання звітності, оптимізація оподаткування для ФОП та компаній.</div>
+              </div>
+            </div>
+            <div class="info-card">
+              <span class="info-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </span>
+              <div class="info-content">
+                <div class="info-title">Податкове консультування</div>
+                <div class="info-text">Вибір оптимальної системи оподаткування, перевірки та захист інтересів.</div>
+              </div>
+            </div>
+            <div class="info-card">
+              <span class="info-icon">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </span>
+              <div class="info-content">
+                <div class="info-title">Підтримка 24/7</div>
+                <div class="info-text">Оперативні відповіді через Telegram бот та особистий кабінет у додатку.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ————— FORM PAGE ————— -->
+      <section class="page" id="page-form">
+        <h2 class="page-title">Нова заявка</h2>
+        <p class="page-subtitle">Заповніть форму і ми зв'яжемося з вами найближчим часом.</p>
+
+        <!-- Step Indicators -->
+        <div class="step-indicators">
+          <div class="step-indicator">
+            <div class="step-circle active" id="step-circle-1">1</div>
+          </div>
+          <div class="step-line" id="step-line-1"></div>
+          <div class="step-indicator">
+            <div class="step-circle" id="step-circle-2">2</div>
+          </div>
+          <div class="step-line" id="step-line-2"></div>
+          <div class="step-indicator">
+            <div class="step-circle" id="step-circle-3">3</div>
+          </div>
+        </div>
+
+        <!-- Step Labels -->
+        <div style="display:flex; justify-content:space-between; margin-bottom:28px; padding:0 8px;">
+          <span style="font-size:11px; color:var(--text-dim); font-weight:500;">Ім'я</span>
+          <span style="font-size:11px; color:var(--text-dim); font-weight:500;">Телефон</span>
+          <span style="font-size:11px; color:var(--text-dim); font-weight:500;">Опис</span>
+        </div>
+
+        <div class="form-container">
+          <!-- Step 1: Name -->
+          <div class="form-step active" id="form-step-1">
+            <div class="form-group">
+              <label class="form-label" for="input-name">Ваше ім'я</label>
+              <input type="text" class="form-input" id="input-name" placeholder="Введіть ваше ім'я" autocomplete="name">
+              <div class="form-error" id="error-name">Будь ласка, введіть ваше ім'я</div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-primary btn-full" onclick="nextStep()">Далі →</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Phone -->
+          <div class="form-step" id="form-step-2">
+            <div class="form-group">
+              <label class="form-label" for="input-phone">Номер телефону</label>
+              <input type="tel" class="form-input" id="input-phone" placeholder="+380 XX XXX XX XX" autocomplete="tel">
+              <div class="form-hint">Введіть номер у форматі +380...</div>
+              <div class="form-error" id="error-phone">Невірний номер телефону</div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-secondary" onclick="prevStep()">← Назад</button>
+              <button class="btn btn-primary" onclick="nextStep()">Далі →</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Description -->
+          <div class="form-step" id="form-step-3">
+            <div class="form-group">
+              <label class="form-label" for="input-text">Опишіть ваше питання</label>
+              <textarea class="form-textarea" id="input-text" placeholder="Детально опишіть, з чим вам потрібна допомога..."></textarea>
+              <div class="form-error" id="error-text">Будь ласка, опишіть ваше питання</div>
+            </div>
+            <div class="btn-row">
+              <button class="btn btn-secondary" onclick="prevStep()">← Назад</button>
+              <button class="btn btn-primary" onclick="submitForm()" id="btn-submit">Надіслати ✓</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Success Screen -->
+        <div class="success-screen" id="form-success">
+          <svg class="svg-icon-large" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <h3 class="success-title">Заявку надіслано!</h3>
+          <p class="success-text">Дякуємо! Наш спеціаліст зв'яжеться з вами найближчим часом.</p>
+          <button class="btn btn-primary btn-full" onclick="resetForm()">На головну</button>
+        </div>
+      </section>
+
+      <!-- ————— REQUESTS PAGE ————— -->
+      <section class="page" id="page-requests">
+        <h2 class="page-title">Мої заявки</h2>
+        <p class="page-subtitle">Історія ваших звернень та їх статуси.</p>
+
+        <!-- Loading Skeleton -->
+        <div class="skeleton-container" id="requests-skeleton">
+          <div class="skeleton-card">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line long"></div>
+            <div class="skeleton-line medium"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line long"></div>
+            <div class="skeleton-line medium"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line long"></div>
+            <div class="skeleton-line medium"></div>
+          </div>
+        </div>
+
+        <!-- Request Cards Container -->
+        <div id="requests-list"></div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="requests-empty">
+          <svg class="svg-icon-large" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          <h3 class="empty-title">Заявок ще немає</h3>
+          <p class="empty-text">Ви ще не залишали заявок. Створіть першу, і вона з'явиться тут.</p>
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('form')">Створити заявку</button>
+        </div>
+      </section>
+
+      <!-- ————— CALCULATOR PAGE ————— -->
+      <section class="page" id="page-calculator">
+        <h2 class="page-title">Калькулятор податків</h2>
+        <p class="page-subtitle">Розрахуйте податки та внески для ФОП за обраною групою.</p>
+
+        <!-- Group Selection -->
+        <div class="calc-groups" id="calc-groups">
+          <div class="calc-group-card" onclick="selectGroup(1)" data-group="1">
+            <span class="group-dot dot-1"></span>
+            <span class="group-name">ФОП 1 група</span>
+            <span class="group-rate">302.80 ₴/міс</span>
+          </div>
+          <div class="calc-group-card" onclick="selectGroup(2)" data-group="2">
+            <span class="group-dot dot-2"></span>
+            <span class="group-name">ФОП 2 група</span>
+            <span class="group-rate">1 600 ₴/міс</span>
+          </div>
+          <div class="calc-group-card" onclick="selectGroup('3_5')" data-group="3_5">
+            <span class="group-dot dot-3_5"></span>
+            <span class="group-name">ФОП 3 (5%)</span>
+            <span class="group-rate">5% від доходу</span>
+          </div>
+          <div class="calc-group-card" onclick="selectGroup('3_3')" data-group="3_3">
+            <span class="group-dot dot-3_3"></span>
+            <span class="group-name">ФОП 3 (3%+ПДВ)</span>
+            <span class="group-rate">3% + ПДВ</span>
+          </div>
+        </div>
+
+        <!-- Revenue Input (for group 3) -->
+        <div class="calc-revenue" id="calc-revenue">
+          <div class="form-group">
+            <label class="form-label" for="input-revenue">Дохід за квартал (₴)</label>
+            <input type="number" class="form-input" id="input-revenue" placeholder="Введіть суму доходу" inputmode="numeric">
+            <div class="form-hint">Вкажіть суму доходу за один квартал</div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="calculateTax()">Розрахувати</button>
+        </div>
+
+        <!-- Result Card -->
+        <div class="calc-result" id="calc-result">
+          <div class="calc-result-title">Результати розрахунку</div>
+          <div id="calc-result-rows"></div>
+          <div class="calc-result-note" id="calc-result-note"></div>
+        </div>
+      </section>
+
+      <!-- ————— ADMIN PAGE ————— -->
+      <section class="page" id="page-admin">
+        <h2 class="page-title">Панель адміністратора</h2>
+        <p class="page-subtitle">Керування новими очікуючими заявками клієнтів.</p>
+
+        <!-- Loading Skeleton -->
+        <div class="skeleton-container" id="admin-skeleton">
+          <div class="skeleton-card">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line long"></div>
+            <div class="skeleton-line medium"></div>
+          </div>
+        </div>
+
+        <!-- Admin Requests List -->
+        <div id="admin-requests-list"></div>
+
+        <!-- Admin Empty State -->
+        <div class="empty-state" id="admin-empty">
+          <svg class="svg-icon-large" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          <h3 class="empty-title">Нових заявок немає</h3>
+          <p class="empty-text">Усі вхідні заявки успішно оброблено.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ===== BOTTOM NAVIGATION ===== -->
+    <nav class="bottom-nav">
+      <div class="nav-item active" data-page="home" onclick="navigateTo('home')">
+        <span class="nav-icon">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </span>
+        <span class="nav-label">Головна</span>
+      </div>
+      <div class="nav-item" data-page="form" onclick="navigateTo('form')">
+        <span class="nav-icon">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </span>
+        <span class="nav-label">Заявка</span>
+      </div>
+      <div class="nav-item" data-page="requests" onclick="navigateTo('requests')">
+        <span class="nav-icon">
+          <svg class="svg-icon" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+        </span>
+        <span class="nav-label">Заявки</span>
+      </div>
+      <div class="nav-item" data-page="calculator" onclick="navigateTo('calculator')">
+        <span class="nav-icon">
+          <svg class="svg-icon" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 17v-6M15 17V7M12 17v-4"/></svg>
+        </span>
+        <span class="nav-label">Калькулятор</span>
+      </div>
+      <div class="nav-item" id="nav-item-admin" data-page="admin" onclick="navigateTo('admin')" style="display:none;">
+        <span class="nav-icon">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </span>
+        <span class="nav-label">Адмін</span>
+      </div>
+    </nav>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ===== REPLY DIALOG MODAL ===== -->
+    <div class="modal-backdrop" id="reply-modal">
+      <div class="modal-card">
+        <h3 class="modal-title">Відповідь клієнту</h3>
+        <p class="modal-subtitle" id="reply-modal-subtitle">Заявка №...</p>
+        
+        <div class="form-group">
+          <textarea class="form-textarea" id="reply-text-input" placeholder="Введіть текст відповіді користувачу..." style="height: 120px;"></textarea>
+          <div class="form-error" id="error-reply-text">Будь ласка, введіть текст відповіді</div>
+        </div>
+        
+        <div class="btn-row" style="margin-top: 20px;">
+          <button class="btn btn-secondary" onclick="closeReplyModal()">Скасувати</button>
+          <button class="btn btn-primary" onclick="submitAdminReply()" id="btn-submit-reply">Надіслати</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
