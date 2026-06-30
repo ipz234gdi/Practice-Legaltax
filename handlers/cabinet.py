@@ -70,12 +70,12 @@ async def show_cabinet(message: Message, state: FSMContext):
         if requests:
             for req in requests:
                 status_ukr = status_emojis.get(req.status, req.status)
-                date_str = req.created_at.strftime("%d.%m.%Y %H:%M")
+                date_str = escape_markdown(req.created_at.strftime("%d.%m.%Y %H:%M"))
                 short_text = req.text[:50] + "..." if len(req.text) > 50 else req.text
                 requests_text += (
                     f"• *Заявка №{req.id}* \\({date_str}\\)\n"
-                    f"  Статус: {status_ukr}\n"
-                    f"  Суть: _{short_text}_\n\n"
+                    f"  Статус: {escape_markdown(status_ukr)}\n"
+                    f"  Суть: _{escape_markdown(short_text)}_\n\n"
                 )
         else:
             requests_text = "_У вас поки немає поданих заявок\\._\n"
@@ -92,7 +92,7 @@ async def show_cabinet(message: Message, state: FSMContext):
             f"👤 *Особистий кабінет клієнта*\n"
             f"───────────────────\n"
             f"📱 *Ваш телефон:* `{escape_markdown_code(format_phone(user.phone_number))}`\n"
-            f"📅 *Дата реєстрації:* {user.created_at.strftime('%d.%m.%Y')}\n"
+            f"📅 *Дата реєстрації:* {escape_markdown(user.created_at.strftime('%d.%m.%Y'))}\n"
             f"{stats_text}\n"
             f"───────────────────\n"
             f"📋 *Ваші останні заявки:* \n"
@@ -225,12 +225,12 @@ async def paginate_user_requests(callback: CallbackQuery):
     
     for req in requests:
         status_ukr = status_emojis.get(req.status, req.status)
-        date_str = req.created_at.strftime("%d.%m.%Y %H:%M")
+        date_str = escape_markdown(req.created_at.strftime("%d.%m.%Y %H:%M"))
         short_text = req.text[:100] + "..." if len(req.text) > 100 else req.text
         text += (
             f"• *Заявка №{req.id}* \\({date_str}\\)\n"
-            f"  Статус: {status_ukr}\n"
-            f"  Суть: _{short_text}_\n\n"
+            f"  Статус: {escape_markdown(status_ukr)}\n"
+            f"  Суть: _{escape_markdown(short_text)}_\n\n"
         )
         
     builder = InlineKeyboardBuilder()
@@ -285,12 +285,12 @@ async def refresh_cabinet_callback(callback: CallbackQuery):
     if requests:
         for req in requests:
             status_ukr = status_emojis.get(req.status, req.status)
-            date_str = req.created_at.strftime("%d.%m.%Y %H:%M")
+            date_str = escape_markdown(req.created_at.strftime("%d.%m.%Y %H:%M"))
             short_text = req.text[:50] + "..." if len(req.text) > 50 else req.text
             requests_text += (
                 f"• *Заявка №{req.id}* \\({date_str}\\)\n"
-                f"  Статус: {status_ukr}\n"
-                f"  Суть: _{short_text}_\n\n"
+                f"  Статус: {escape_markdown(status_ukr)}\n"
+                f"  Суть: _{escape_markdown(short_text)}_\n\n"
             )
     else:
         requests_text = "_У вас поки немає поданих заявок\\._\n"
@@ -307,7 +307,7 @@ async def refresh_cabinet_callback(callback: CallbackQuery):
         f"👤 *Особистий кабінет клієнта*\n"
         f"───────────────────\n"
         f"📱 *Ваш телефон:* `{escape_markdown_code(format_phone(user.phone_number))}`\n"
-        f"📅 *Дата реєстрації:* {user.created_at.strftime('%d.%m.%Y')}\n"
+        f"📅 *Дата реєстрації:* {escape_markdown(user.created_at.strftime('%d.%m.%Y'))}\n"
         f"{stats_text}\n"
         f"───────────────────\n"
         f"📋 *Ваші останні заявки:* \n"

@@ -178,10 +178,10 @@ async def notify_admins_new_request(bot, req_id: int, name: str, phone: str, tex
         f"🌐 *Джерело:* `{escape_markdown_code(source)}`\n"
         f"⚙️ *ID Заявки:* `#req{req_id}`\n"
         f"───────────────────\n"
-        f"👤 *Клієнт:* {name}\n"
+        f"👤 *Клієнт:* {escape_markdown(name)}\n"
         f"📞 *Телефон:* `{escape_markdown_code(format_phone(phone))}`\n"
         f"📝 *Опис проблеми:*\n"
-        f"_{safe_text}_\n"
+        f"_{escape_markdown(safe_text)}_\n"
         f"───────────────────"
     )
 
