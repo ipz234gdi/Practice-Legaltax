@@ -1,332 +1,355 @@
-import random
-import os
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-from typing import Optional, List
-from database.base import SessionLocal
-from database.crud import get_user_by_phone, create_request_form, create_auth_session, verify_otp_code, get_user_requests, get_user_by_id
-from database.models import RequestForm
-from handlers.form import notify_admins_new_request
-from aiogram import Bot
-from sqlalchemy import select, func
-import logging
-
-app = FastAPI(title="LegalTax Bot API", version="1.0.0")
-
-# CORS для Telegram Mini Apps
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Монтуємо статичні файли Mini App
-webapp_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "webapp")
-if os.path.isdir(webapp_dir):
-    app.mount("/webapp", StaticFiles(directory=webapp_dir, html=True), name="webapp")
-
-# Глобальний об'єкт бота, який ініціалізується при старті
-bot_instance: Optional[Bot] = None
-
-def get_bot() -> Bot:
-    if bot_instance is None:
-        raise HTTPException(status_code=500, detail="Bot instance not initialized yet")
-    return bot_instance
-
-# Схеми запитів Pydantic
-class WebLeadSchema(BaseModel):
-    name: str = Field(..., example="Олександр")
-    phone: str = Field(..., example="+380501234567")
-    text: str = Field(..., example="Потрібна консультація щодо ФОП")
-
-class SendOTPSchema(BaseModel):
-    phone: str = Field(..., example="+380501234567")
-
-class VerifyOTPSchema(BaseModel):
-    phone: str = Field(..., example="+380501234567")
-    code: str = Field(..., example="123456")
-
-class TWACreateRequestSchema(BaseModel):
-    user_id: int
-    name: str
-    phone: str
-    text: str
-
-class TWAAdminActionSchema(BaseModel):
-    admin_id: int
-    request_id: int
-    action: str  # accept, reject, reply
-    reply_text: Optional[str] = None
-
-@app.post("/api/web-lead")
-async def receive_web_lead(lead: WebLeadSchema, bot: Bot = Depends(get_bot)):
-    """
-    Приймає заявки з сайту LegalTax та пересилає їх адмінам у Telegram
-    """
-    async with SessionLocal() as session:
-        # Спочатку спробуємо знайти користувача за телефоном
-        user = await get_user_by_phone(session, lead.phone)
-        user_id = user.id if user else None
-        
-        # Зберігаємо форму в БД
-        req = await create_request_form(
-            session=session,
-            name=lead.name,
-            phone=lead.phone,
-            text=lead.text,
-            user_id=user_id,
-            source="site"
-        )
-        req_id = req.id
-
-    # Сповіщаємо адмінів
-    await notify_admins_new_request(bot, req_id, lead.name, lead.phone, lead.text, "Сайт LegalTax")
-    
-    return {"status": "success", "request_id": req_id}
-
-@app.post("/api/send-otp")
-async def send_otp(data: SendOTPSchema, bot: Bot = Depends(get_bot)):
-    """
-    Генерує 6-значний код і відправляє його користувачу в Telegram для аутентифікації на сайті
-    """
-    phone = data.phone
-    
-    async with SessionLocal() as session:
-        # Перевіряємо, чи зареєстрований користувач з таким телефоном у боті
-        user = await get_user_by_phone(session, phone)
-        if not user:
-            return {
-                "status": "user_not_found", 
-                "message": "Користувач з таким номером не запускав бота LegalTax. Будь ласка, запустіть бота спочатку."
-            }
-        
-        # Генеруємо 6-значний код
-        code = str(random.randint(100000, 999999))
-        
-        # Зберігаємо в базі даних
-        await create_auth_session(session, phone, code)
-        
-    # Надсилаємо код користувачу в Telegram
-    try:
-        from utils.text_utils import escape_markdown
-        message_text = (
-            f"🔑 *Код авторизації для сайту LegalTax*\n\n"
-            f"Ваш одноразовий код підтвердження:\n"
-            f"⚡ `{code}` ⚡\n\n"
-            f"⚠️ _Не передавайте цей код нікому\\._"
-        )
-        await bot.send_message(
-            chat_id=user.id,
-            text=message_text,
-            parse_mode="MarkdownV2"
-        )
-        return {"status": "sent", "phone": phone}
-    except Exception as e:
-        logging.error(f"Не вдалося надіслати OTP код користувачу {user.id}: {e}")
-        return {"status": "error", "message": "Не вдалося надіслати код у Telegram"}
-
-@app.post("/api/verify-otp")
-async def verify_otp(data: VerifyOTPSchema):
-    """
-    Перевіряє правильність введеного коду на сайті
-    """
-    async with SessionLocal() as session:
-        is_valid = await verify_otp_code(session, data.phone, data.code)
-        
-    if is_valid:
-        return {"status": "verified"}
-    else:
-        return {"status": "invalid", "message": "Неправильний або застарілий код"}
-
-
-# ============================================================
-# --- TELEGRAM MINI APP (TWA) API ---
-# ============================================================
-
-@app.get("/api/twa/my-requests")
-async def twa_get_my_requests(user_id: int):
-    """
-    Повертає список заявок користувача для Telegram Mini App
-    """
-    async with SessionLocal() as session:
-        result = await session.execute(
-            select(RequestForm)
-            .where(RequestForm.user_id == user_id)
-            .order_by(RequestForm.created_at.desc())
-            .limit(20)
-        )
-        requests = result.scalars().all()
-        
-    return [
-        {
-            "id": req.id,
-            "name": req.name,
-            "phone": req.phone,
-            "text": req.text,
-            "status": req.status,
-            "source": req.source,
-            "created_at": req.created_at.isoformat() if req.created_at else None
-        }
-        for req in requests
-    ]
-
-@app.post("/api/twa/create-request")
-async def twa_create_request(data: TWACreateRequestSchema, bot: Bot = Depends(get_bot)):
-    """
-    Створює нову заявку від користувача Telegram Mini App
-    """
-    async with SessionLocal() as session:
-        req = await create_request_form(
-            session=session,
-            name=data.name,
-            phone=data.phone,
-            text=data.text,
-            user_id=data.user_id,
-            source="bot"
-        )
-        req_id = req.id
-
-    # Сповіщаємо адмінів
-    await notify_admins_new_request(bot, req_id, data.name, data.phone, data.text, "Telegram Mini App")
-    
-    return {"status": "success", "request_id": req_id}
-
-@app.get("/api/twa/user-info")
-async def twa_get_user_info(user_id: int):
-    """
-    Повертає інформацію про користувача для Telegram Mini App
-    """
-    async with SessionLocal() as session:
-        user = await get_user_by_id(session, user_id)
-        if not user:
-            return {"status": "not_found"}
-        
-        # Кількість заявок за статусами
-        stats_query = await session.execute(
-            select(RequestForm.status, func.count(RequestForm.id))
-            .where(RequestForm.user_id == user_id)
-            .group_by(RequestForm.status)
-        )
-        stats = {row[0]: row[1] for row in stats_query.all()}
-        
-    from config import ADMIN_IDS
-    return {
-        "status": "ok",
-        "is_admin": user_id in ADMIN_IDS,
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "phone": user.phone_number,
-            "created_at": user.created_at.isoformat() if user.created_at else None
-        },
-        "stats": {
-            "pending": stats.get("pending", 0),
-            "in_progress": stats.get("in_progress", 0),
-            "completed": stats.get("completed", 0),
-            "rejected": stats.get("rejected", 0),
-            "total": sum(stats.values())
-        }
-    }
-
-@app.get("/api/twa/admin/pending")
-async def twa_get_admin_pending(admin_id: int):
-    """
-    Повертає список очікуючих заявок для панелі адміністратора у WebApp
-    """
-    from config import ADMIN_IDS
-    if admin_id not in ADMIN_IDS:
-        raise HTTPException(status_code=403, detail="Access denied")
-        
-    async with SessionLocal() as session:
-        result = await session.execute(
-            select(RequestForm)
-            .where(RequestForm.status == "pending")
-            .order_by(RequestForm.created_at.desc())
-        )
-        requests = result.scalars().all()
-        
-    return [
-        {
-            "id": req.id,
-            "name": req.name,
-            "phone": req.phone,
-            "text": req.text,
-            "status": req.status,
-            "source": req.source,
-            "created_at": req.created_at.isoformat() if req.created_at else None
-        }
-        for req in requests
-    ]
-
-@app.post("/api/twa/admin/action")
-async def twa_admin_action(data: TWAAdminActionSchema, bot: Bot = Depends(get_bot)):
-    """
-    Обробляє дії адміністратора над заявками з WebApp
-    """
-    from config import ADMIN_IDS
-    from database.crud import get_request_form_by_id
-    
-    if data.admin_id not in ADMIN_IDS:
-        raise HTTPException(status_code=403, detail="Access denied")
-        
-    async with SessionLocal() as session:
-        req = await get_request_form_by_id(session, data.request_id)
-        if not req:
-            raise HTTPException(status_code=404, detail="Request not found")
-            
-        if data.action == "accept":
-            req.status = "in_progress"
-            await session.commit()
-            if req.user_id:
-                try:
-                    await bot.send_message(
-                        chat_id=req.user_id,
-                        text=f"⚙️ *Вашу заявку №{req.id} прийнято в роботу\\!*",
-                        parse_mode="MarkdownV2"
-                    )
-                except Exception as e:
-                    logging.error(f"Не вдалося надіслати повідомлення користувачу {req.user_id}: {e}")
-                    
-        elif data.action == "reject":
-            req.status = "rejected"
-            await session.commit()
-            if req.user_id:
-                try:
-                    await bot.send_message(
-                        chat_id=req.user_id,
-                        text=f"❌ *Вашу заявку №{req.id} було відхилено спеціалістом\\.*",
-                        parse_mode="MarkdownV2"
-                    )
-                except Exception as e:
-                    logging.error(f"Не вдалося надіслати повідомлення користувачу {req.user_id}: {e}")
-                    
-        elif data.action == "reply":
-            if not data.reply_text:
-                raise HTTPException(status_code=400, detail="Reply text is required")
-            req.status = "completed"
-            await session.commit()
-            if req.user_id:
-                try:
-                    from utils.text_utils import escape_markdown
-                    reply_message = (
-                        f"💬 *Отримано відповідь на вашу заявку №{req.id}*\\:\n\n"
-                        f"{escape_markdown(data.reply_text)}"
-                    )
-                    await bot.send_message(
-                        chat_id=req.user_id,
-                        text=reply_message,
-                        parse_mode="MarkdownV2"
-                    )
-                except Exception as e:
-                    logging.error(f"Не вдалося надіслати повідомлення користувачу {req.user_id}: {e}")
-        else:
-            raise HTTPException(status_code=400, detail="Invalid action")
-            
-    return {"status": "success"}
-
+import random
+import os
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from typing import Optional, List
+from database.base import SessionLocal
+from database.crud import get_user_by_phone, create_request_form, create_auth_session, verify_otp_code, get_user_requests, get_user_by_id
+from database.models import RequestForm
+from handlers.form import notify_admins_new_request
+from aiogram import Bot
+from sqlalchemy import select, func
+import logging
+
+app = FastAPI(title="LegalTax Bot API", version="1.0.0")
+
+# CORS для Telegram Mini Apps
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Монтуємо статичні файли Mini App
+webapp_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "webapp")
+if os.path.isdir(webapp_dir):
+    app.mount("/webapp", StaticFiles(directory=webapp_dir, html=True), name="webapp")
+
+# Глобальні об'єкти ботів, ініціалізуються при старті
+user_bot_instance: Optional[Bot] = None
+admin_bot_instance: Optional[Bot] = None
+
+
+def get_user_bot() -> Bot:
+    """Повертає клієнтського бота для відправки повідомлень користувачам."""
+    if user_bot_instance is None:
+        raise HTTPException(status_code=500, detail="User bot instance not initialized yet")
+    return user_bot_instance
+
+
+def get_admin_bot() -> Bot:
+    """Повертає адмін-бота для сповіщень адмінам."""
+    if admin_bot_instance is None:
+        raise HTTPException(status_code=500, detail="Admin bot instance not initialized yet")
+    return admin_bot_instance
+
+
+# Схеми запитів Pydantic
+class WebLeadSchema(BaseModel):
+    name: str = Field(..., example="Олександр")
+    phone: str = Field(..., example="+380501234567")
+    text: str = Field(..., example="Потрібна консультація щодо ФОП")
+
+class SendOTPSchema(BaseModel):
+    phone: str = Field(..., example="+380501234567")
+
+class VerifyOTPSchema(BaseModel):
+    phone: str = Field(..., example="+380501234567")
+    code: str = Field(..., example="123456")
+
+class TWACreateRequestSchema(BaseModel):
+    user_id: int
+    name: str
+    phone: str
+    text: str
+
+class TWAAdminActionSchema(BaseModel):
+    admin_id: int
+    request_id: int
+    action: str  # accept, reject, reply
+    reply_text: Optional[str] = None
+
+
+@app.post("/api/web-lead")
+async def receive_web_lead(
+    lead: WebLeadSchema,
+    admin_bot: Bot = Depends(get_admin_bot)
+):
+    """
+    Приймає заявки з сайту LegalTax та пересилає їх адмінам через адмін-бота
+    """
+    async with SessionLocal() as session:
+        user = await get_user_by_phone(session, lead.phone)
+        user_id = user.id if user else None
+
+        req = await create_request_form(
+            session=session,
+            name=lead.name,
+            phone=lead.phone,
+            text=lead.text,
+            user_id=user_id,
+            source="site"
+        )
+        req_id = req.id
+
+    # Сповіщаємо адмінів через адмін-бота
+    await notify_admins_new_request(admin_bot, req_id, lead.name, lead.phone, lead.text, "Сайт LegalTax")
+
+    return {"status": "success", "request_id": req_id}
+
+
+@app.post("/api/send-otp")
+async def send_otp(
+    data: SendOTPSchema,
+    user_bot: Bot = Depends(get_user_bot)
+):
+    """
+    Генерує 6-значний код і відправляє його користувачу через клієнтський бот
+    """
+    phone = data.phone
+
+    async with SessionLocal() as session:
+        user = await get_user_by_phone(session, phone)
+        if not user:
+            return {
+                "status": "user_not_found",
+                "message": "Користувач з таким номером не запускав бота LegalTax. Будь ласка, запустіть бота спочатку."
+            }
+
+        code = str(random.randint(100000, 999999))
+        await create_auth_session(session, phone, code)
+
+    # Надсилаємо код користувачу через клієнтський бот
+    try:
+        message_text = (
+            f"🔑 *Код авторизації для сайту LegalTax*\n\n"
+            f"Ваш одноразовий код підтвердження:\n"
+            f"⚡ `{code}` ⚡\n\n"
+            f"⚠️ _Не передавайте цей код нікому\\._"
+        )
+        await user_bot.send_message(
+            chat_id=user.id,
+            text=message_text,
+            parse_mode="MarkdownV2"
+        )
+        return {"status": "sent", "phone": phone}
+    except Exception as e:
+        logging.error(f"Не вдалося надіслати OTP код користувачу {user.id}: {e}")
+        return {"status": "error", "message": "Не вдалося надіслати код у Telegram"}
+
+
+@app.post("/api/verify-otp")
+async def verify_otp(data: VerifyOTPSchema):
+    """
+    Перевіряє правильність введеного коду на сайті
+    """
+    async with SessionLocal() as session:
+        is_valid = await verify_otp_code(session, data.phone, data.code)
+
+    if is_valid:
+        return {"status": "verified"}
+    else:
+        return {"status": "invalid", "message": "Неправильний або застарілий код"}
+
+
+# ============================================================
+# --- TELEGRAM MINI APP (TWA) API ---
+# ============================================================
+
+@app.get("/api/twa/my-requests")
+async def twa_get_my_requests(user_id: int):
+    """
+    Повертає список заявок користувача для Telegram Mini App
+    """
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(RequestForm)
+            .where(RequestForm.user_id == user_id)
+            .order_by(RequestForm.created_at.desc())
+            .limit(20)
+        )
+        requests = result.scalars().all()
+
+    return [
+        {
+            "id": req.id,
+            "name": req.name,
+            "phone": req.phone,
+            "text": req.text,
+            "status": req.status,
+            "source": req.source,
+            "created_at": req.created_at.isoformat() if req.created_at else None
+        }
+        for req in requests
+    ]
+
+
+@app.post("/api/twa/create-request")
+async def twa_create_request(
+    data: TWACreateRequestSchema,
+    admin_bot: Bot = Depends(get_admin_bot)
+):
+    """
+    Створює нову заявку від користувача Telegram Mini App
+    """
+    async with SessionLocal() as session:
+        req = await create_request_form(
+            session=session,
+            name=data.name,
+            phone=data.phone,
+            text=data.text,
+            user_id=data.user_id,
+            source="bot"
+        )
+        req_id = req.id
+
+    # Сповіщаємо адмінів через адмін-бота
+    await notify_admins_new_request(admin_bot, req_id, data.name, data.phone, data.text, "Telegram Mini App")
+
+    return {"status": "success", "request_id": req_id}
+
+
+@app.get("/api/twa/user-info")
+async def twa_get_user_info(user_id: int):
+    """
+    Повертає інформацію про користувача для Telegram Mini App
+    """
+    async with SessionLocal() as session:
+        user = await get_user_by_id(session, user_id)
+        if not user:
+            return {"status": "not_found"}
+
+        stats_query = await session.execute(
+            select(RequestForm.status, func.count(RequestForm.id))
+            .where(RequestForm.user_id == user_id)
+            .group_by(RequestForm.status)
+        )
+        stats = {row[0]: row[1] for row in stats_query.all()}
+
+    from config import ADMIN_IDS
+    return {
+        "status": "ok",
+        "is_admin": user_id in ADMIN_IDS,
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "phone": user.phone_number,
+            "created_at": user.created_at.isoformat() if user.created_at else None
+        },
+        "stats": {
+            "pending": stats.get("pending", 0),
+            "in_progress": stats.get("in_progress", 0),
+            "completed": stats.get("completed", 0),
+            "rejected": stats.get("rejected", 0),
+            "total": sum(stats.values())
+        }
+    }
+
+
+@app.get("/api/twa/admin/pending")
+async def twa_get_admin_pending(admin_id: int):
+    """
+    Повертає список очікуючих заявок для панелі адміністратора у WebApp
+    """
+    from config import ADMIN_IDS
+    if admin_id not in ADMIN_IDS:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    async with SessionLocal() as session:
+        result = await session.execute(
+            select(RequestForm)
+            .where(RequestForm.status == "pending")
+            .order_by(RequestForm.created_at.desc())
+        )
+        requests = result.scalars().all()
+
+    return [
+        {
+            "id": req.id,
+            "name": req.name,
+            "phone": req.phone,
+            "text": req.text,
+            "status": req.status,
+            "source": req.source,
+            "created_at": req.created_at.isoformat() if req.created_at else None
+        }
+        for req in requests
+    ]
+
+
+@app.post("/api/twa/admin/action")
+async def twa_admin_action(
+    data: TWAAdminActionSchema,
+    user_bot: Bot = Depends(get_user_bot),
+    admin_bot: Bot = Depends(get_admin_bot)
+):
+    """
+    Обробляє дії адміністратора над заявками з WebApp.
+    Відповіді та сповіщення клієнтам відправляються через user_bot.
+    """
+    from config import ADMIN_IDS
+    from database.crud import get_request_form_by_id
+
+    if data.admin_id not in ADMIN_IDS:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    async with SessionLocal() as session:
+        req = await get_request_form_by_id(session, data.request_id)
+        if not req:
+            raise HTTPException(status_code=404, detail="Request not found")
+
+        if data.action == "accept":
+            req.status = "in_progress"
+            await session.commit()
+            if req.user_id:
+                try:
+                    await user_bot.send_message(
+                        chat_id=req.user_id,
+                        text=f"⚙️ *Вашу заявку №{req.id} прийнято в роботу\\!*",
+                        parse_mode="MarkdownV2"
+                    )
+                except Exception as e:
+                    logging.error(f"Не вдалося надіслати повідомлення користувачу {req.user_id}: {e}")
+
+        elif data.action == "reject":
+            req.status = "rejected"
+            await session.commit()
+            if req.user_id:
+                try:
+                    await user_bot.send_message(
+                        chat_id=req.user_id,
+                        text=f"❌ *Вашу заявку №{req.id} було відхилено спеціалістом\\.*",
+                        parse_mode="MarkdownV2"
+                    )
+                except Exception as e:
+                    logging.error(f"Не вдалося надіслати повідомлення користувачу {req.user_id}: {e}")
+
+        elif data.action == "reply":
+            if not data.reply_text:
+                raise HTTPException(status_code=400, detail="Reply text is required")
+            req.status = "completed"
+            await session.commit()
+            if req.user_id:
+                try:
+                    from utils.text_utils import escape_markdown
+                    reply_message = (
+                        f"💬 *Отримано відповідь на вашу заявку №{req.id}*\\:\n\n"
+                        f"{escape_markdown(data.reply_text)}"
+                    )
+                    await user_bot.send_message(
+                        chat_id=req.user_id,
+                        text=reply_message,
+                        parse_mode="MarkdownV2"
+                    )
+                except Exception as e:
+                    logging.error(f"Не вдалося надіслати повідомлення користувачу {req.user_id}: {e}")
+        else:
+            raise HTTPException(status_code=400, detail="Invalid action")
+
+    return {"status": "success"}
