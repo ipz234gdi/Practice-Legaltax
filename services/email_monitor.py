@@ -199,6 +199,10 @@ async def email_monitor_loop(bot: Bot):
     """
     logger.info("Запуск фонового моніторингу пошти...")
 
+    # При старті позначаємо ВСІ старі листи як прочитані
+    await asyncio.to_thread(mark_all_as_seen_sync)
+
     while True:
-        await check_new_emails(bot)
+        # Чекаємо інтервал ПЕРЕД першою перевіркою, щоб нові листи мали час надійти
         await asyncio.sleep(config.EMAIL_CHECK_INTERVAL)
+        await check_new_emails(bot)

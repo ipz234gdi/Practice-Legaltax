@@ -45,12 +45,28 @@ async def get_or_create_user(
         await session.refresh(user)
     return user
 
-async def update_user_phone(session: AsyncSession, user_id: int, phone_number: str) -> Optional[User]:
+async def update_user_phone(
+    session: AsyncSession, 
+    user_id: int, 
+    phone_number: str,
+    username: Optional[str] = None,
+    first_name: Optional[str] = None,
+    last_name: Optional[str] = None
+) -> User:
     user = await get_user_by_id(session, user_id)
-    if user:
+    if not user:
+        user = User(
+            id=user_id,
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            phone_number=phone_number
+        )
+        session.add(user)
+    else:
         user.phone_number = phone_number
-        await session.commit()
-        await session.refresh(user)
+    await session.commit()
+    await session.refresh(user)
     return user
 
 
