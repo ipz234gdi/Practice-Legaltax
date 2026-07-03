@@ -44,8 +44,10 @@ def get_queue_card_data(req: RequestForm) -> tuple[str, InlineKeyboardMarkup]:
     if len(safe_text) > 1500:
         safe_text = safe_text[:1500] + "\n\n... (текст обрізано)"
 
+    status_header = "⚙️ *Заявка в роботі*" if req.status == "in_progress" else "📥 *Нова заявка \\!*"
+
     admin_text = (
-        f"📥 *Нова заявка \\!*\n"
+        f"{status_header}\n"
         f"🌐 *Джерело:* `{escape_markdown_code(source_name)}`\n"
         f"⚙️ *ID Заявки:* `#req{req.id}`\n"
         f"───────────────────\n"
@@ -57,17 +59,30 @@ def get_queue_card_data(req: RequestForm) -> tuple[str, InlineKeyboardMarkup]:
     )
 
     builder = InlineKeyboardBuilder()
-    builder.row(
-        InlineKeyboardButton(text="В роботу ✅", callback_data=f"adm_work:{req.id}"),
-        InlineKeyboardButton(text="Відхилити ❌", callback_data=f"adm_reject:{req.id}")
-    )
+    if req.status == "pending":
+        builder.row(
+            InlineKeyboardButton(text="В роботу ✅", callback_data=f"adm_work:{req.id}"),
+            InlineKeyboardButton(text="Відхилити ❌", callback_data=f"adm_reject:{req.id}")
+        )
+    else:  # in_progress
+        builder.row(
+            InlineKeyboardButton(text="Відхилити ❌", callback_data=f"adm_reject:{req.id}")
+        )
+
     builder.row(
         InlineKeyboardButton(text="Відповісти користувачу 💬", callback_data=f"adm_reply:{req.id}")
     )
-    builder.row(
-        InlineKeyboardButton(text="Залишити в очікуванні ⏳", callback_data=f"adm_pending:{req.id}"),
-        InlineKeyboardButton(text="Вийти з черги ❌", callback_data="adm_close")
-    )
+
+    if req.status == "in_progress":
+        builder.row(
+            InlineKeyboardButton(text="Повернути в очікування ⏳", callback_data=f"adm_pending:{req.id}"),
+            InlineKeyboardButton(text="Вийти з черги ❌", callback_data="adm_close")
+        )
+    else:
+        builder.row(
+            InlineKeyboardButton(text="Залишити в очікуванні ⏳", callback_data=f"adm_pending:{req.id}"),
+            InlineKeyboardButton(text="Вийти з черги ❌", callback_data="adm_close")
+        )
     return admin_text, builder.as_markup()
 
 
@@ -75,10 +90,11 @@ async def send_next_queue_card(bot, chat_id, state: FSMContext):
     """Надсилає наступну картку заявки зі стану черги."""
     state_data = await state.get_data()
     seen_ids = state_data.get("seen_ids", [])
+    queue_type = state_data.get("queue_type", "pending")
 
     async with SessionLocal() as session:
         query = select(RequestForm).where(
-            RequestForm.status == "pending"
+            RequestForm.status == queue_type
         )
         if seen_ids:
             query = query.where(RequestForm.id.notin_(seen_ids))
@@ -91,10 +107,11 @@ async def send_next_queue_card(bot, chat_id, state: FSMContext):
         # Заявки закінчилися!
         await state.clear()
 
+        msg = "🎉 *Усі очікуючі заявки оброблені\\! Черга порожня\\.*" if queue_type == "pending" else "🎉 *Немає інших активних заявок у роботі\\.*"
         await safe_send_or_edit(
             bot.send_message,
             chat_id=chat_id,
-            text="🎉 *Усі очікуючі заявки оброблені\\! Черга порожня\\.*",
+            text=msg,
             parse_mode="MarkdownV2",
             reply_markup=get_admin_home_keyboard()
         )

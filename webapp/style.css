@@ -2483,3 +2483,326 @@ input, textarea, button, select {
   margin-bottom: 20px;
 
 }
+
+/* --- Admin Sub-tabs --- */
+.admin-tabs {
+  display: flex;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-subtle);
+}
+
+.admin-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+}
+
+.admin-tab-btn:hover {
+  color: var(--text-primary);
+}
+
+.admin-tab-btn.active {
+  background: var(--accent);
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.2);
+}
+
+.admin-tab-content {
+  display: none;
+}
+
+.admin-tab-content.active {
+  display: block;
+}
+
+/* --- Admin Controls (Filter & Sort) --- */
+.admin-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.control-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.control-select {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a38d96'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  padding-right: 32px;
+}
+
+.control-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.15);
+}
+
+/* --- TikTok Swiping Dashboard --- */
+.swipe-container-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.swipe-card-deck {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  height: 420px;
+  perspective: 1000px;
+  margin-bottom: 24px;
+}
+
+.swipe-card {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  user-select: none;
+  cursor: grab;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+  transform-origin: center bottom;
+  touch-action: none;
+}
+
+.swipe-card.dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+.swipe-card:nth-last-child(1) {
+  z-index: 3;
+  transform: translate3d(0, 0, 0);
+}
+
+.swipe-card:nth-last-child(2) {
+  z-index: 2;
+  transform: translate3d(0, 8px, -15px) scale(0.96);
+  opacity: 0.85;
+}
+
+.swipe-card:nth-last-child(3) {
+  z-index: 1;
+  transform: translate3d(0, 16px, -30px) scale(0.92);
+  opacity: 0.6;
+}
+
+.swipe-card:nth-last-child(n+4) {
+  display: none;
+}
+
+.swipe-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.swipe-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  overflow-y: auto;
+  padding: 10px 0;
+  margin-bottom: 16px;
+}
+
+.swipe-card-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.swipe-card-phone {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 16px;
+  text-decoration: none;
+}
+
+.swipe-card-desc {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  text-align: left;
+  max-height: 180px;
+  overflow-y: auto;
+  word-break: break-word;
+}
+
+.swipe-card-footer {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.swipe-card-badge {
+  position: absolute;
+  top: 30px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 18px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0;
+  transform: rotate(-15deg);
+  z-index: 10;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.swipe-card-badge.badge-accept {
+  right: 30px;
+  color: var(--success);
+  border: 3px solid var(--success);
+  transform: rotate(15deg);
+}
+
+.swipe-card-badge.badge-reject {
+  left: 30px;
+  color: var(--error);
+  border: 3px solid var(--error);
+  transform: rotate(-15deg);
+}
+
+.swipe-card-badge.badge-skip {
+  top: auto;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--warning);
+  border: 3px solid var(--warning);
+}
+
+.swipe-action-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.btn-swipe-action {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-swipe-action:active {
+  transform: scale(0.9);
+}
+
+.btn-swipe-reject {
+  color: var(--error);
+}
+
+.btn-swipe-reject:hover {
+  background: rgba(239, 83, 80, 0.1);
+  border-color: var(--error);
+  box-shadow: 0 0 12px rgba(239, 83, 80, 0.2);
+}
+
+.btn-swipe-skip {
+  width: 46px;
+  height: 46px;
+  color: var(--text-muted);
+}
+
+.btn-swipe-skip:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--text-muted);
+}
+
+.btn-swipe-accept {
+  color: var(--success);
+}
+
+.btn-swipe-accept:hover {
+  background: rgba(76, 175, 80, 0.1);
+  border-color: var(--success);
+  box-shadow: 0 0 12px rgba(76, 175, 80, 0.2);
+}
+
+.swipe-instructions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.swipe-instructions span {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: bold;
+}

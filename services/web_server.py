@@ -24,6 +24,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+async def root():
+    """Повертає статус для перевірки працездатності (Health Check)"""
+    return {"status": "ok", "message": "LegalTax Bot API is running"}
+
 # Монтуємо статичні файли Mini App
 webapp_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "webapp")
 if os.path.isdir(webapp_dir):
@@ -250,6 +255,37 @@ async def twa_get_user_info(user_id: int):
             "total": sum(stats.values())
         }
     }
+
+
+@app.get("/api/twa/admin/requests")
+async def twa_get_admin_requests(admin_id: int, status: Optional[str] = None):
+    """
+    Повертає список заявок для адміністратора у WebApp з можливістю фільтрації за статусом
+    """
+    from config import ADMIN_IDS
+    if admin_id not in ADMIN_IDS:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    async with SessionLocal() as session:
+        query = select(RequestForm)
+        if status and status != "all":
+            query = query.where(RequestForm.status == status)
+        query = query.order_by(RequestForm.created_at.desc())
+        result = await session.execute(query)
+        requests = result.scalars().all()
+
+    return [
+        {
+            "id": req.id,
+            "name": req.name,
+            "phone": req.phone,
+            "text": req.text,
+            "status": req.status,
+            "source": req.source,
+            "created_at": req.created_at.isoformat() if req.created_at else None
+        }
+        for req in requests
+    ]
 
 
 @app.get("/api/twa/admin/pending")

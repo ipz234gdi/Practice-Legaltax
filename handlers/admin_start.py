@@ -76,8 +76,7 @@ async def _show_admin_panel(message: Message):
 
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(text="Переглянути очікуючі заявки ⏳📋", callback_data="adm_view_pending"))
-
-    from handlers.admin import get_admin_home_keyboard
+    builder.row(InlineKeyboardButton(text="Заявки в роботі ⚙️📋", callback_data="adm_view_in_progress"))
 
     await safe_send_or_edit(
         message.answer,
@@ -96,7 +95,7 @@ async def process_view_pending_callback(callback: CallbackQuery, state: FSMConte
 
     await state.clear()
     await state.set_state(AdminStates.in_queue)
-    await state.update_data(seen_ids=[])
+    await state.update_data(seen_ids=[], queue_type="pending")
 
     async with SessionLocal() as session:
         query = select(RequestForm).where(RequestForm.status == "pending")
@@ -120,6 +119,39 @@ async def process_view_pending_callback(callback: CallbackQuery, state: FSMConte
     await send_next_queue_card(callback.bot, callback.message.chat.id, state)
 
 
+@router.callback_query(F.data == "adm_view_in_progress")
+async def process_view_in_progress_callback(callback: CallbackQuery, state: FSMContext):
+    """Обробка натискання кнопки 'Переглянути заявки в роботі'"""
+    if callback.from_user.id not in ADMIN_IDS:
+        await safe_send_or_edit(callback.answer, text="❌ Доступ заборонено", show_alert=True)
+        return
+
+    await state.clear()
+    await state.set_state(AdminStates.in_queue)
+    await state.update_data(seen_ids=[], queue_type="in_progress")
+
+    async with SessionLocal() as session:
+        query = select(RequestForm).where(RequestForm.status == "in_progress")
+        result = await session.execute(query)
+        reqs = result.scalars().all()
+
+    if not reqs:
+        await state.clear()
+        await safe_send_or_edit(callback.answer, text="Немає активних заявок у роботі! ⚙️", show_alert=True)
+        return
+
+    from handlers.admin import get_admin_home_keyboard, send_next_queue_card
+
+    await safe_send_or_edit(
+        callback.message.answer,
+        text="📂 *Запуск перегляду активних заявок у роботі\\.\\.\\.*",
+        parse_mode="MarkdownV2",
+        reply_markup=get_admin_home_keyboard()
+    )
+    await safe_send_or_edit(callback.answer)
+    await send_next_queue_card(callback.bot, callback.message.chat.id, state)
+
+
 @router.message(Command("pending"))
 async def list_pending_requests(message: Message, state: FSMContext):
     """Команда /pending — швидкий запуск черги заявок"""
@@ -128,7 +160,7 @@ async def list_pending_requests(message: Message, state: FSMContext):
 
     await state.clear()
     await state.set_state(AdminStates.in_queue)
-    await state.update_data(seen_ids=[])
+    await state.update_data(seen_ids=[], queue_type="pending")
 
     async with SessionLocal() as session:
         query = select(RequestForm).where(RequestForm.status == "pending")
