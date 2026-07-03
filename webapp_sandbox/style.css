@@ -14,7 +14,8 @@
   --card-blue: #e8f4fd;
   
   /* Функціональні кольори */
-  --primary: #131316;
+  --accent-brand: #492232; /* Deep plummy burgundy from main website */
+  --primary: #492232;
   --accent: #aa4b70;
   --text-main: #131316;
   --text-muted: #6c727f;
@@ -462,7 +463,7 @@ html, body {
 }
 
 .btn-primary {
-  background: var(--bg-sidebar);
+  background: var(--accent-brand);
   color: var(--bg-canvas);
 }
 
@@ -533,7 +534,7 @@ button:disabled {
   right: 0;
   z-index: 1000;
   height: var(--nav-height);
-  background: var(--bg-sidebar);
+  background: var(--accent-brand);
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -813,4 +814,34 @@ button:disabled {
   display: flex;
   gap: 12px;
   margin-top: 16px;
+}
+
+/* Кнопка розгортання деталей заявки */
+.btn-read-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--bg-sidebar); /* Контрастний чорний фон */
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+  width: 100%;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.btn-read-more:active {
+  transform: scale(0.98);
+  opacity: 0.95;
+}
+
+.btn-read-more .lucide {
+  width: 15px;
+  height: 15px;
 }

@@ -329,8 +329,9 @@ function renderSwipeCards() {
               ${escapeHtml(textToShow)}
             </p>
             ${isLong ? `
-              <button class="btn-read-more" onclick="event.stopPropagation(); event.preventDefault(); openFullDetailsModal(${req.id})" style="background:none; border:none; padding:0; color:#aa4b70; font-size:12px; font-weight:600; cursor:pointer; margin-top:6px; display:flex; align-items:center; gap:4px;">
-                Читати далі 📖
+              <button class="btn-read-more" onclick="event.stopPropagation(); event.preventDefault(); openFullDetailsModal(${req.id})">
+                <span>Детальніше</span>
+                <i data-lucide="eye"></i>
               </button>
             ` : ''}
           </div>
@@ -341,6 +342,7 @@ function renderSwipeCards() {
   });
   
   bindSwipeEvents();
+  try { lucide.createIcons(); } catch (e) {}
 }
 
 function bindSwipeEvents() {
