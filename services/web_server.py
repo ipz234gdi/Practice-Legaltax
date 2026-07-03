@@ -341,6 +341,8 @@ async def twa_admin_action(
             raise HTTPException(status_code=404, detail="Request not found")
 
         if data.action == "accept":
+            if req.status != "pending":
+                raise HTTPException(status_code=400, detail="Заявку вже оброблено іншим адміністратором")
             req.status = "in_progress"
             await session.commit()
             if req.user_id:
@@ -354,6 +356,8 @@ async def twa_admin_action(
                     logging.error(f"Не вдалося надіслати повідомлення користувачу {req.user_id}: {e}")
 
         elif data.action == "reject":
+            if req.status not in ["pending", "in_progress"]:
+                raise HTTPException(status_code=400, detail="Заявка вже закрита або відхилена")
             req.status = "rejected"
             await session.commit()
             if req.user_id:
@@ -369,6 +373,8 @@ async def twa_admin_action(
         elif data.action == "reply":
             if not data.reply_text:
                 raise HTTPException(status_code=400, detail="Reply text is required")
+            if req.status not in ["pending", "in_progress"]:
+                raise HTTPException(status_code=400, detail="Заявка вже закрита або відхилена")
             req.status = "completed"
             await session.commit()
             if req.user_id:

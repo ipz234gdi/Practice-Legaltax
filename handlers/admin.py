@@ -161,12 +161,85 @@ async def send_next_queue_card(bot, chat_id, state: FSMContext):
 
 # === ОБРОБКА CALLBACK-КНОПОК НА ЗАЯВКАХ ===
 
+async def _update_admin_message_status(callback: CallbackQuery, req):
+    status_labels = {
+        "pending": "⏳ Очікує",
+        "in_progress": "🟢 В роботі",
+        "completed": "✅ Виконано",
+        "rejected": "❌ Відхилено"
+    }
+    
+    source_name = {
+        "bot": "Telegram Bot",
+        "site": "Сайт LegalTax",
+        "email": "Email Пошта"
+    }.get(req.source, req.source)
+
+    status_str = status_labels.get(req.status, req.status)
+    new_text = (
+        f"📥 *Нова заявка \\!*\n"
+        f"🌐 *Джерело:* `{escape_markdown_code(source_name)}`\n"
+        f"⚙️ *ID Заявки:* `#req{req.id}`\n"
+        f"───────────────────\n"
+        f"👤 *Клієнт:* {escape_markdown(req.name)}\n"
+        f"📞 *Телефон:* `{escape_markdown_code(format_phone(req.phone))}`\n"
+        f"📝 *Опис проблеми:*\n"
+        f"_{escape_markdown(req.text)}_\n"
+        f"───────────────────\n\n"
+        f"📢 *Поточний статус:* `{status_str}`"
+    )
+
+    builder = InlineKeyboardBuilder()
+    if req.status == "in_progress":
+        builder.row(InlineKeyboardButton(text="Відповісти користувачу 💬", callback_data=f"adm_reply:{req.id}"))
+    elif req.status == "pending":
+        builder.row(
+            InlineKeyboardButton(text="В роботу ✅", callback_data=f"adm_work:{req.id}"),
+            InlineKeyboardButton(text="Відхилити ❌", callback_data=f"adm_reject:{req.id}")
+        )
+        builder.row(InlineKeyboardButton(text="Відповісти 💬", callback_data=f"adm_reply:{req.id}"))
+    
+    builder.row(InlineKeyboardButton(text="Вийти з черги ❌", callback_data="adm_close"))
+
+    try:
+        if callback.message.photo:
+            await safe_send_or_edit(
+                callback.message.edit_caption,
+                caption=new_text,
+                parse_mode="MarkdownV2",
+                reply_markup=builder.as_markup()
+            )
+        else:
+            await safe_send_or_edit(
+                callback.message.edit_text,
+                text=new_text,
+                parse_mode="MarkdownV2",
+                reply_markup=builder.as_markup()
+            )
+    except Exception as e:
+        logging.error(f"Не вдалося оновити статус повідомлення: {e}")
+
+
 @router.callback_query(F.data.startswith("adm_work:"))
 async def process_admin_work(callback: CallbackQuery, user_bot: Bot):
     """Взяти заявку в роботу. Сповіщення користувачу відправляється через user_bot."""
     req_id = int(callback.data.split(":")[1])
 
     async with SessionLocal() as session:
+        req = await get_request_form_by_id(session, req_id)
+        if not req:
+            await safe_send_or_edit(callback.answer, text="❌ Заявку не знайдено в базі даних", show_alert=True)
+            return
+
+        if req.status != "pending":
+            await safe_send_or_edit(
+                callback.answer,
+                text=f"⚠️ Цю заявку вже оброблено іншим спеціалістом! Статус: {req.status}",
+                show_alert=True
+            )
+            await _update_admin_message_status(callback, req)
+            return
+
         req = await update_request_status(session, req_id, "in_progress")
 
     if not req:
@@ -240,6 +313,15 @@ async def process_admin_reject(callback: CallbackQuery):
         await safe_send_or_edit(callback.answer, text="❌ Заявку не знайдено", show_alert=True)
         return
 
+    if req.status != "pending" and req.status != "in_progress":
+        await safe_send_or_edit(
+            callback.answer,
+            text=f"⚠️ Цю заявку вже було оброблено! Статус: {req.status}",
+            show_alert=True
+        )
+        await _update_admin_message_status(callback, req)
+        return
+
     source_name = {
         "bot": "Telegram Bot",
         "site": "Сайт LegalTax",
@@ -287,11 +369,21 @@ async def process_admin_reject_confirm(callback: CallbackQuery, state: FSMContex
     req_id = int(callback.data.split(":")[1])
 
     async with SessionLocal() as session:
-        req = await update_request_status(session, req_id, "rejected")
+        req = await get_request_form_by_id(session, req_id)
+        if not req:
+            await safe_send_or_edit(callback.answer, text="❌ Заявку не знайдено", show_alert=True)
+            return
 
-    if not req:
-        await safe_send_or_edit(callback.answer, text="❌ Заявку не знайдено", show_alert=True)
-        return
+        if req.status != "pending" and req.status != "in_progress":
+            await safe_send_or_edit(
+                callback.answer,
+                text=f"⚠️ Заявку вже було оброблено! Статус: {req.status}",
+                show_alert=True
+            )
+            await _update_admin_message_status(callback, req)
+            return
+
+        req = await update_request_status(session, req_id, "rejected")
 
     source_name = {
         "bot": "Telegram Bot",
@@ -390,11 +482,20 @@ async def process_admin_pending(callback: CallbackQuery, state: FSMContext):
     req_id = int(callback.data.split(":")[1])
 
     async with SessionLocal() as session:
-        req = await update_request_status(session, req_id, "pending")
+        req = await get_request_form_by_id(session, req_id)
+        if not req:
+            await safe_send_or_edit(callback.answer, text="❌ Заявку не знайдено", show_alert=True)
+            return
 
-    if not req:
-        await safe_send_or_edit(callback.answer, text="❌ Заявку не знайдено", show_alert=True)
-        return
+        if req.status != "in_progress":
+            await safe_send_or_edit(
+                callback.answer,
+                text=f"⚠️ Статус цієї заявки вже: {req.status}",
+                show_alert=True
+            )
+            return
+
+        req = await update_request_status(session, req_id, "pending")
 
     try:
         await safe_send_or_edit(callback.message.delete)

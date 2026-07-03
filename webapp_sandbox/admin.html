@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#492232">
+  <meta name="description" content="LegalTax Admin Panel — панель керування заявками">
+  <title>LegalTax Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- ===== HEADER ===== -->
+    <header class="app-header">
+      <div style="display: flex; flex-direction: column; align-items: flex-start;">
+        <span class="logo">LegalTax Admin</span>
+        <span class="subtitle">Панель адміністратора</span>
+      </div>
+      <button class="theme-toggle-btn" onclick="toggleTheme()" id="theme-toggle-btn" title="Змінити тему">
+        <svg class="theme-toggle-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <path id="theme-icon-path" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </header>
+
+    <!-- ===== CONTENT ===== -->
+    <main class="app-content">
+
+      <!-- ————— ADMIN LIST VIEW ————— -->
+      <section class="admin-tab-content active" id="admin-tab-list">
+        <div class="admin-controls">
+          <div class="control-group">
+            <label class="control-label" for="filter-status">Статус</label>
+            <select class="control-select" id="filter-status" onchange="filterAdminRequests()">
+              <option value="all">Всі заявки</option>
+              <option value="pending" selected>Очікують ⏳</option>
+              <option value="in_progress">В роботі ⚙️</option>
+              <option value="completed">Виконано ✅</option>
+              <option value="rejected">Відхилено ❌</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="sort-order">Сортування</label>
+            <select class="control-select" id="sort-order" onchange="filterAdminRequests()">
+              <option value="oldest" selected>Спочатку старі</option>
+              <option value="newest">Спочатку нові</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Skeleton Loader -->
+        <div class="skeleton-container" id="admin-skeleton">
+          <div class="skeleton-card">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line long"></div>
+            <div class="skeleton-line medium"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line long"></div>
+            <div class="skeleton-line medium"></div>
+          </div>
+        </div>
+
+        <!-- Admin Requests List -->
+        <div class="admin-requests-list" id="admin-requests-list"></div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="admin-empty">
+          <i data-lucide="check-square" style="width: 48px; height: 48px; color: var(--text-dim); margin-bottom: 12px;"></i>
+          <h3 class="empty-title">Заявок немає</h3>
+          <p class="empty-text">Не знайдено заявок із вибраним статусом.</p>
+        </div>
+      </section>
+
+      <!-- ————— ADMIN CARDS SWIPE DASHBOARD ————— -->
+      <section class="admin-tab-content" id="admin-tab-swipe">
+        
+        <!-- Swiping Deck -->
+        <div class="swipe-card-deck" id="swipe-card-deck"></div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="swipe-empty">
+          <i data-lucide="sparkles" style="width: 48px; height: 48px; color: var(--accent); margin-bottom: 12px;"></i>
+          <h3 class="empty-title" id="swipe-empty-title">Всі заявки оброблено!</h3>
+          <p class="empty-text">Нових очікуючих заявок немає. Гарна робота!</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ===== BOTTOM NAVIGATION ===== -->
+    <nav class="bottom-nav">
+      <div class="nav-item active" id="admin-btn-list" onclick="switchAdminTab('list')">
+        <span class="nav-icon">
+          <i data-lucide="list"></i>
+        </span>
+        <span class="nav-label">Список</span>
+      </div>
+      <div class="nav-item" id="admin-btn-swipe" onclick="switchAdminTab('swipe')">
+        <span class="nav-icon">
+          <i data-lucide="copy"></i>
+        </span>
+        <span class="nav-label">Свайп</span>
+      </div>
+    </nav>
+
+    <!-- ===== REPLY MODAL ===== -->
+    <div class="modal" id="reply-modal">
+      <div class="modal-card">
+        <h3 class="modal-title">Надіслати відповідь</h3>
+        <p class="modal-subtitle" id="reply-modal-subtitle">Заявка №</p>
+        
+        <div class="form-group">
+          <textarea class="form-textarea" id="reply-text-input" placeholder="Введіть текст відповіді користувачу..." style="height: 120px;"></textarea>
+          <div class="form-error" id="error-reply-text">Будь ласка, введіть текст відповіді</div>
+        </div>
+        
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="closeReplyModal()">Скасувати</button>
+          <button class="btn btn-primary" onclick="submitAdminReply()" id="btn-submit-reply">Надіслати ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TOAST CONTAINER ===== -->
+    <div class="toast-container" id="toast-container"></div>
+
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
