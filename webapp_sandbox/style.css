@@ -210,22 +210,20 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-light);
+  background: var(--accent-brand);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .app-header .logo {
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-main);
+  color: #ffffff;
   letter-spacing: -0.3px;
 }
 
 .app-header .subtitle {
   font-size: 11px;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.75);
   font-weight: 500;
 }
 
@@ -534,7 +532,7 @@ button:disabled {
   right: 0;
   z-index: 1000;
   height: var(--nav-height);
-  background: var(--accent-brand);
+  background: var(--bg-sidebar);
   display: flex;
   justify-content: space-around;
   align-items: center;
