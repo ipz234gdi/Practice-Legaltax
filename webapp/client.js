@@ -3,6 +3,7 @@ const API_BASE = window.location.origin;
 
 let userId = null;
 let username = null;
+
 let currentPage = 'home';
 let selectedGroup = null;
 
@@ -13,7 +14,10 @@ const TAX_DATA_2026 = {
   militaryGroup1_2: 864.70, 
 };
 
+// ─── DOM Ready ────────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
+  initTheme();
+  
   if (tg) {
     tg.ready();
     tg.expand();
@@ -32,6 +36,37 @@ window.addEventListener('DOMContentLoaded', async () => {
   try { lucide.createIcons(); } catch (e) {}
 });
 
+// ─── Theme Toggling ───────────────────────────
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-theme');
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  updateThemeIcon();
+}
+
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  const isSystemLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  if (savedTheme === 'light' || (!savedTheme && isSystemLight)) {
+    document.body.classList.add('light-theme');
+  } else {
+    document.body.classList.remove('light-theme');
+  }
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  const isLight = document.body.classList.contains('light-theme');
+  const iconPath = document.getElementById('theme-icon-path');
+  if (iconPath) {
+    if (isLight) {
+      iconPath.setAttribute('d', 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707.707M12 7a5 5 0 100 10 5 5 0 000-10z');
+    } else {
+      iconPath.setAttribute('d', 'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z');
+    }
+  }
+}
+
+// ─── Navigation ───────────────────────────────
 function navigateTo(pageId) {
   currentPage = pageId;
   document.querySelectorAll('.page').forEach(page => page.classList.toggle('active', page.id === `page-${pageId}`));
@@ -49,6 +84,7 @@ function scrollToAbout() {
   }, 100);
 }
 
+// ─── Form Submission (With double-click prevention) ───
 async function submitForm() {
   const nameEl = document.getElementById('input-name');
   const phoneEl = document.getElementById('input-phone');
@@ -58,6 +94,9 @@ async function submitForm() {
   const errPhone = document.getElementById('error-phone');
   const errText = document.getElementById('error-text');
 
+  const btn = document.querySelector('#page-form button.btn-primary');
+  if (btn && btn.disabled) return; 
+
   let isValid = true;
 
   if (!nameEl.value.trim()) { errName.style.display = 'block'; isValid = false; } else { errName.style.display = 'none'; }
@@ -65,6 +104,11 @@ async function submitForm() {
   if (!textEl.value.trim()) { errText.style.display = 'block'; isValid = false; } else { errText.style.display = 'none'; }
 
   if (!isValid) return;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Надсилаємо...';
+  }
 
   try {
     const response = await fetch(`${API_BASE}/api/twa/create-request`, {
@@ -75,12 +119,22 @@ async function submitForm() {
     if (!response.ok) throw new Error();
     showToast('Заявку успішно надіслано!', 'success');
     nameEl.value = ''; phoneEl.value = ''; textEl.value = '';
+    
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Надіслати в LegalTax';
+    }
     navigateTo('home');
   } catch (err) {
     showToast('Помилка сервера при відправці', 'error');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Надіслати в LegalTax';
+    }
   }
 }
 
+// ─── Tax Calculator ───────────────────────────
 function selectGroup(group) {
   selectedGroup = group;
   document.querySelectorAll('.calc-group-card').forEach(card => card.classList.toggle('active', card.dataset.group === String(group)));
@@ -140,7 +194,7 @@ function calculateTax() {
   resultCard.classList.add('visible');
 }
 
-// ВИПРАВЛЕНО: Розширене завантаження історії заявок для користувача
+// ─── Requests Loader ──────────────────────────
 async function loadMyRequests() {
   const list = document.getElementById('requests-list');
   const empty = document.getElementById('requests-empty');
@@ -156,7 +210,6 @@ async function loadMyRequests() {
     }
     empty.style.display = 'none';
     
-    // Словник статусів для рендерингу преміум бейджів
     const statusConfig = {
       pending: { text: 'Очікує ⏳', color: '#f59e0b', bg: '#fef3c7' },
       in_progress: { text: 'В роботі ⚙️', color: '#3b82f6', bg: '#dbeafe' },
@@ -171,7 +224,6 @@ async function loadMyRequests() {
       
       const currentStatus = statusConfig[req.status] || { text: req.status, color: '#6c727f', bg: '#f4f6f9' };
       
-      // Рендеринг відповіді менеджера LegalTax, якщо вона є
       let replyBlock = '';
       if (req.reply_text) {
         replyBlock = `

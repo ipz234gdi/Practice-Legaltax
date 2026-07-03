@@ -644,7 +644,7 @@ html, body {
 }
 
 /* --- Специфічні стилі для Tinder-like Експрес ДЕКИ --- */
-.swipe-card-deck {
+.swipe-card-deck-container {
   position: relative;
   width: 100%;
   max-width: 360px;
@@ -653,11 +653,17 @@ html, body {
   perspective: 1000px;
 }
 
+.swipe-card-deck {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
 .swipe-card {
   position: absolute;
   width: 100%;
   height: 340px;
-  background: #ffffff !important;
+  background: #ffffff;
   border: 1px solid var(--border-light) !important;
   border-radius: var(--radius-lg) !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
@@ -666,48 +672,48 @@ html, body {
   touch-action: none; /* Вимикає нативний скрол браузера під час тягнення картки */
   user-select: none;
   transform-origin: center bottom;
+  transition: transform 0.3s ease, background-color 0.15s ease;
+}
+
+.swipe-card.dragging {
+  transition: none;
 }
 
 .swipe-card:active {
   cursor: grabbing;
 }
 
-/* Стилізація плашок-індикаторів всередині карти */
-.swipe-badge {
+/* Фоновий індикатор дії за картою (по центру) */
+.swipe-bg-badge {
   position: absolute;
-  top: 24px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 1px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  font-size: 32px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
   opacity: 0;
   pointer-events: none;
-  z-index: 100;
-  transition: opacity 0.1s ease;
+  z-index: 1; /* За картою */
+  transition: opacity 0.15s ease, transform 0.15s ease, color 0.15s ease;
+  text-align: center;
+  white-space: nowrap;
 }
 
-.swipe-badge.badge-accept {
-  right: 24px;
+.swipe-bg-badge.accept {
   color: #22c55e;
-  border: 2px solid #22c55e;
-  transform: rotate(12deg);
+  transform: translate(-50%, -50%) scale(1.1) rotate(8deg);
 }
 
-.swipe-badge.badge-reject {
-  left: 24px;
+.swipe-bg-badge.reject {
   color: #ef4444;
-  border: 2px solid #ef4444;
-  transform: rotate(-12deg);
+  transform: translate(-50%, -50%) scale(1.1) rotate(-8deg);
 }
 
-.swipe-badge.badge-skip {
-  top: auto;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
+.swipe-bg-badge.skip {
   color: #f59e0b;
-  border: 2px solid #f59e0b;
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 .swipe-card-inner {
