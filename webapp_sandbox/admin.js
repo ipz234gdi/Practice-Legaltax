@@ -218,10 +218,11 @@ function renderAdminRequestCard(req) {
   const phone = req.phone ? formatPhone(req.phone) : '';
 
   const sourceLabels = {
-    bot: 'Бот 🤖',
-    webapp: 'Mini App 📱',
-    admin: 'Адмін ⚙️',
-    web: 'Сайт 🌐'
+    bot: 'Бот',
+    webapp: 'Mini App',
+    admin: 'Адмін',
+    web: 'Сайт',
+    site: 'Сайт'
   };
 
   let actionButtonsHtml = '';

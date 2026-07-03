@@ -225,8 +225,11 @@ async def receive_web_lead(
         )
         req_id = req.id
 
-    # Сповіщаємо адмінів через адмін-бота
-    await notify_admins_new_request(admin_bot, req_id, name, phone, text, "Сайт LegalTax")
+    # Сповіщаємо адмінів у фоновому режимі (щоб уникнути таймауту на стороні Elementor)
+    import asyncio
+    asyncio.create_task(
+        notify_admins_new_request(admin_bot, req_id, name, phone, text, "Сайт LegalTax")
+    )
 
     return {"status": "success", "request_id": req_id}
 
