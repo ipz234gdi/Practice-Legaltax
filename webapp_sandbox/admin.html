@@ -118,6 +118,38 @@
       </div>
     </div>
 
+    <!-- ===== FULL DETAILS MODAL ===== -->
+    <div class="modal" id="details-modal">
+      <div class="modal-card" style="max-height: 85vh; display: flex; flex-direction: column;">
+        <h3 class="modal-title" style="font-size:18px; font-weight:700; margin-bottom: 4px;">Детальна інформація</h3>
+        <p class="modal-subtitle" id="details-modal-subtitle"
+          style="font-size:12px; color:var(--text-light); margin-bottom:16px;"></p>
+
+        <div class="modal-body-scroll" style="flex: 1; overflow-y: auto; margin-bottom: 20px; font-size: 14px; line-height: 1.6; color: var(--text-main); word-break: break-word;">
+          <div style="margin-bottom: 12px;">
+            <strong style="color: var(--text-light); font-size: 12px; display: block; margin-bottom: 2px;">Клієнт:</strong>
+            <span id="details-client-name" style="font-weight: 600;"></span>
+          </div>
+          <div style="margin-bottom: 12px;" id="details-phone-container">
+            <strong style="color: var(--text-light); font-size: 12px; display: block; margin-bottom: 2px;">Телефон:</strong>
+            <a id="details-client-phone" href="" style="color: var(--accent); text-decoration: none; font-weight: 600;"></a>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <strong style="color: var(--text-light); font-size: 12px; display: block; margin-bottom: 2px;">Джерело:</strong>
+            <span id="details-source" style="font-weight: 500;"></span>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <strong style="color: var(--text-light); font-size: 12px; display: block; margin-bottom: 2px;">Повне повідомлення:</strong>
+            <div id="details-full-text" style="background: #f8fafc; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-light); white-space: pre-wrap;"></div>
+          </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top: auto;">
+          <button class="btn btn-secondary" onclick="closeFullDetailsModal()" style="width: 100%;">Назад до черги</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== ADMIN BOTTOM NAVIGATION ===== -->
     <nav class="bottom-nav">
       <div class="nav-item active" id="nav-item-list" onclick="switchAdminTab('list')">

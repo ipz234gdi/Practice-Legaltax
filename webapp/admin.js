@@ -310,6 +310,10 @@ function renderSwipeCards() {
     const time = new Date(req.created_at).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
     const phone = req.phone ? formatPhone(req.phone) : '';
     
+    const rawText = req.text || 'Опис відсутній';
+    const isLong = rawText.length > 120;
+    const textToShow = isLong ? rawText.substring(0, 120) + '...' : rawText;
+    
     const cardHtml = `
       <div class="swipe-card" id="swipe-card-${req.id}" data-id="${req.id}" style="z-index: ${10 - idx}; transform: translateY(${idx * 8}px) scale(${1 - idx * 0.04});">
         
@@ -321,9 +325,14 @@ function renderSwipeCards() {
             </div>
             <h3 style="font-size:16px; font-weight:700; margin-bottom:4px; color:#0f172a;">${escapeHtml(req.name || 'Без імені')}</h3>
             ${phone ? `<a href="tel:${phone}" style="font-size:12px; color:#aa4b70; text-decoration:none; display:inline-block; margin-bottom:8px; font-weight:500;">${phone}</a>` : ''}
-            <p style="font-size:13px; color:#475569; overflow-y:auto; max-height:160px; line-height:1.5; margin-top:6px; word-break:break-word;">
-              ${escapeHtml(req.text || 'Опис відсутній')}
+            <p style="font-size:13px; color:#475569; line-height:1.5; margin-top:6px; word-break:break-word;">
+              ${escapeHtml(textToShow)}
             </p>
+            ${isLong ? `
+              <button class="btn-read-more" onclick="event.stopPropagation(); event.preventDefault(); openFullDetailsModal(${req.id})" style="background:none; border:none; padding:0; color:#aa4b70; font-size:12px; font-weight:600; cursor:pointer; margin-top:6px; display:flex; align-items:center; gap:4px;">
+                Читати далі 📖
+              </button>
+            ` : ''}
           </div>
         </div>
       </div>
@@ -604,6 +613,64 @@ function openReplyModal(requestId) {
 function closeReplyModal() {
   document.getElementById('reply-modal').classList.remove('active');
   // Reset lock if modal closed manually
+  isSwipeProcessing = false;
+}
+
+function openFullDetailsModal(requestId) {
+  let req = swipeQueue.find(r => r.id === requestId);
+  if (!req && typeof adminRequests !== 'undefined') {
+    req = adminRequests.find(r => r.id === requestId);
+  }
+  if (!req) return;
+
+  const date = new Date(req.created_at).toLocaleDateString('uk-UA');
+  const time = new Date(req.created_at).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+  const phone = req.phone ? formatPhone(req.phone) : '';
+
+  const sourceLabels = {
+    bot: 'Бот',
+    webapp: 'Mini App',
+    admin: 'Адмін',
+    web: 'Сайт',
+    site: 'Сайт'
+  };
+
+  const subtitle = document.getElementById('details-modal-subtitle');
+  if (subtitle) {
+    subtitle.textContent = `Заявка №${req.id} • ${date} о ${time}`;
+  }
+
+  const nameEl = document.getElementById('details-client-name');
+  if (nameEl) nameEl.textContent = req.name || 'Без імені';
+
+  const phoneEl = document.getElementById('details-client-phone');
+  const phoneContainer = document.getElementById('details-phone-container');
+  if (phoneEl && phoneContainer) {
+    if (phone) {
+      phoneEl.textContent = phone;
+      phoneEl.href = `tel:${phone}`;
+      phoneContainer.style.display = 'block';
+    } else {
+      phoneContainer.style.display = 'none';
+    }
+  }
+
+  const sourceEl = document.getElementById('details-source');
+  if (sourceEl) {
+    sourceEl.textContent = sourceLabels[req.source] || req.source || 'Невідомо';
+  }
+
+  const textEl = document.getElementById('details-full-text');
+  if (textEl) {
+    textEl.textContent = req.text || 'Опис відсутній';
+  }
+
+  document.getElementById('details-modal').classList.add('active');
+  isSwipeProcessing = true;
+}
+
+function closeFullDetailsModal() {
+  document.getElementById('details-modal').classList.remove('active');
   isSwipeProcessing = false;
 }
 
