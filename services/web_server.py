@@ -1,6 +1,6 @@
 import random
 import os
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -81,28 +81,67 @@ class TWAAdminActionSchema(BaseModel):
 
 @app.post("/api/web-lead")
 async def receive_web_lead(
-    lead: WebLeadSchema,
+    request: Request,
     admin_bot: Bot = Depends(get_admin_bot)
 ):
     """
-    Приймає заявки з сайту LegalTax та пересилає їх адмінам через адмін-бота
+    Приймає заявки з сайту LegalTax та пересилає їх адмінам через адмін-бота.
+    Підтримує як прямий плоский JSON, так і вкладені дані з Elementor (form_fields).
     """
+    try:
+        data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+
+    # Перевіряємо, чи це Elementor webhook (містить form_fields)
+    form_fields = data.get("form_fields", {}) if isinstance(data, dict) else {}
+    
+    name = ""
+    phone = ""
+    text = ""
+    
+    if form_fields:
+        # Шукаємо за загальними ідентифікаторами
+        name = form_fields.get("name") or form_fields.get("ім'я") or form_fields.get("first_name") or ""
+        phone = form_fields.get("phone") or form_fields.get("телефон") or form_fields.get("phone_number") or ""
+        text = form_fields.get("text") or form_fields.get("message") or form_fields.get("запитання") or form_fields.get("question") or ""
+        
+        # Фолбек-перевірка за частковими назвами ключів
+        for k, v in form_fields.items():
+            k_lower = k.lower()
+            if not name and ("name" in k_lower or "ім" in k_lower or "im" in k_lower):
+                name = v
+            elif not phone and ("phone" in k_lower or "тел" in k_lower or "number" in k_lower):
+                phone = v
+            elif not text and ("text" in k_lower or "mess" in k_lower or "пита" in k_lower or "ques" in k_lower or "зап" in k_lower):
+                text = v
+    else:
+        # Прямий плоский JSON
+        name = data.get("name") or ""
+        phone = data.get("phone") or ""
+        text = data.get("text") or data.get("message") or ""
+
+    if not name:
+        name = "Клієнт з сайту"
+    if not phone:
+        raise HTTPException(status_code=400, detail="Phone number is required")
+
     async with SessionLocal() as session:
-        user = await get_user_by_phone(session, lead.phone)
+        user = await get_user_by_phone(session, phone)
         user_id = user.id if user else None
 
         req = await create_request_form(
             session=session,
-            name=lead.name,
-            phone=lead.phone,
-            text=lead.text,
+            name=name,
+            phone=phone,
+            text=text,
             user_id=user_id,
             source="site"
         )
         req_id = req.id
 
     # Сповіщаємо адмінів через адмін-бота
-    await notify_admins_new_request(admin_bot, req_id, lead.name, lead.phone, lead.text, "Сайт LegalTax")
+    await notify_admins_new_request(admin_bot, req_id, name, phone, text, "Сайт LegalTax")
 
     return {"status": "success", "request_id": req_id}
 
