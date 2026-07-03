@@ -211,10 +211,10 @@ async function loadMyRequests() {
     empty.style.display = 'none';
     
     const statusConfig = {
-      pending: { text: 'Очікує ⏳', color: '#f59e0b', bg: '#fef3c7' },
-      in_progress: { text: 'В роботі ⚙️', color: '#3b82f6', bg: '#dbeafe' },
-      completed: { text: 'Виконано ✅', color: '#10b981', bg: '#d1fae5' },
-      rejected: { text: 'Відхилено ❌', color: '#ef4444', bg: '#fee2e2' }
+      pending: { text: 'Очікує', icon: 'clock', color: '#f59e0b', bg: '#fef3c7' },
+      in_progress: { text: 'В роботі', icon: 'settings', color: '#3b82f6', bg: '#dbeafe' },
+      completed: { text: 'Виконано', icon: 'check-circle', color: '#10b981', bg: '#d1fae5' },
+      rejected: { text: 'Відхилено', icon: 'x-circle', color: '#ef4444', bg: '#fee2e2' }
     };
 
     data.forEach(req => {
@@ -222,7 +222,7 @@ async function loadMyRequests() {
       const dateStr = dateObj.toLocaleDateString('uk-UA');
       const timeStr = dateObj.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
       
-      const currentStatus = statusConfig[req.status] || { text: req.status, color: '#6c727f', bg: '#f4f6f9' };
+      const currentStatus = statusConfig[req.status] || { text: req.status, icon: 'help-circle', color: '#6c727f', bg: '#f4f6f9' };
       
       let replyBlock = '';
       if (req.reply_text) {
@@ -237,7 +237,8 @@ async function loadMyRequests() {
       list.insertAdjacentHTML('beforeend', `
         <div class="request-card" style="margin-bottom:14px; background:#ffffff; padding:16px; border:1px solid #ebeeef; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.01);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <span style="font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; color:${currentStatus.color}; background:${currentStatus.bg};">
+            <span style="font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; color:${currentStatus.color}; background:${currentStatus.bg}; display:inline-flex; align-items:center; gap:6px;">
+              <i data-lucide="${currentStatus.icon}" style="width:12px; height:12px; stroke-width:2.5px;"></i>
               ${currentStatus.text}
             </span>
             <span style="font-size:11px; color:#9aa1b1; font-weight:500;">${dateStr} о ${timeStr}</span>
@@ -247,6 +248,9 @@ async function loadMyRequests() {
         </div>
       `);
     });
+    
+    // Re-initialize Lucide to render the newly added status icons
+    try { lucide.createIcons(); } catch(e){}
   } catch(e){
     empty.style.display = 'block';
   }
