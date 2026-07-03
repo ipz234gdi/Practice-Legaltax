@@ -469,7 +469,7 @@ function bindSwipeEvents() {
       }
       if (cardBadge) cardBadge.style.opacity = '0';
       animateSwipeOut(topCard, 'right', () => {
-        handleSwipeAction(reqId, 'accept');
+        handleSwipeAction(reqId, 'accept', true);
       });
     } else if (currentX < -thresholdX) {
       isSwipeProcessing = true; // Lock actions
@@ -479,7 +479,7 @@ function bindSwipeEvents() {
       }
       if (cardBadge) cardBadge.style.opacity = '0';
       animateSwipeOut(topCard, 'left', () => {
-        handleSwipeAction(reqId, 'reject');
+        handleSwipeAction(reqId, 'reject', true);
       });
     } else if (currentY < thresholdY) {
       isSwipeProcessing = true; // Lock actions
@@ -489,7 +489,7 @@ function bindSwipeEvents() {
       }
       if (cardBadge) cardBadge.style.opacity = '0';
       animateSwipeOut(topCard, 'up', () => {
-        handleSwipeAction(reqId, 'skip');
+        handleSwipeAction(reqId, 'skip', true);
       });
     } else {
       topCard.style.transform = '';
@@ -529,8 +529,8 @@ function animateSwipeOut(card, direction, callback) {
   }, 400);
 }
 
-async function handleSwipeAction(reqId, action) {
-  if (isSwipeProcessing) return;
+async function handleSwipeAction(reqId, action, isFromSwipe = false) {
+  if (!isFromSwipe && isSwipeProcessing) return;
   isSwipeProcessing = true;
 
   if (action === 'skip') {
