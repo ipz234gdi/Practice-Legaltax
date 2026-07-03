@@ -9,8 +9,8 @@ tg.ready();
 tg.expand();
 
 try {
-  tg.setHeaderColor('#0a0e27');
-  tg.setBackgroundColor('#0a0e27');
+  tg.setHeaderColor('#492232');
+  tg.setBackgroundColor('#12090d');
 } catch (e) {
   // Fallback: colors not supported in older versions
 }

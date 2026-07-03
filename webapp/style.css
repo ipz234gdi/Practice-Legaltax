@@ -5,35 +5,38 @@
 
 /* --- Custom Properties --- */
 :root {
-  --bg-primary: #0a0e27;
-  --bg-secondary: #111638;
-  --bg-tertiary: #1a1f3d;
-  --bg-card: #111638;
-  --bg-card-hover: #1a1f3d;
-  --bg-input: #0d1130;
-  --bg-glass: rgba(17, 22, 56, 0.65);
-  --bg-glass-strong: rgba(17, 22, 56, 0.85);
+  --bg-primary: #12090d;
+  --bg-secondary: #1d1016;
+  --bg-tertiary: #2a1720;
+  --bg-card: #1d1016;
+  --bg-card-hover: #2a1720;
+  --bg-input: #150b10;
+  --bg-glass: rgba(29, 16, 22, 0.65);
+  --bg-glass-strong: rgba(29, 16, 22, 0.85);
 
-  --accent: #0ff0fc;
-  --accent-rgb: 15, 240, 252;
-  --accent2: #00d4ff;
-  --accent2-rgb: 0, 212, 255;
+  --accent: #aa4b70;          /* Бордово-малиновий */
+  --accent-rgb: 170, 75, 112;
+  --accent2: #e6aebd;         /* Рожеве золото */
+  --accent2-rgb: 230, 174, 189;
+
+  --brand: #492232;           /* Офіційний бордовий колір сайту */
+  --brand-rgb: 73, 34, 50;
 
   --text-primary: #ffffff;
-  --text-secondary: #c8cee0;
-  --text-muted: #8892b0;
-  --text-dim: #5a6380;
+  --text-secondary: #e8d7dd;
+  --text-muted: #a38d96;
+  --text-dim: #705b63;
 
-  --success: #00e676;
-  --success-rgb: 0, 230, 118;
-  --warning: #ffd600;
-  --warning-rgb: 255, 214, 0;
-  --error: #ff5252;
-  --error-rgb: 255, 82, 82;
+  --success: #4caf50;
+  --success-rgb: 76, 175, 80;
+  --warning: #ffb300;
+  --warning-rgb: 255, 179, 0;
+  --error: #ef5350;
+  --error-rgb: 239, 83, 80;
 
-  --border-glow: rgba(15, 240, 252, 0.15);
-  --border-subtle: rgba(136, 146, 176, 0.12);
-  --border-color: rgba(136, 146, 176, 0.12);
+  --border-glow: rgba(170, 75, 112, 0.15);
+  --border-subtle: rgba(163, 141, 150, 0.12);
+  --border-color: rgba(163, 141, 150, 0.12);
 
   --radius-sm: 10px;
   --radius-md: 14px;
@@ -163,27 +166,25 @@ input, textarea, button, select {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: var(--bg-glass-strong);
+  background: var(--brand);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid var(--border-glow);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .app-header .logo {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.3px;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .app-header .subtitle {
   font-size: 11px;
-  color: var(--text-muted);
+  color: #e8d7dd;
   font-weight: 500;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
 /* ============================================
@@ -429,7 +430,7 @@ input, textarea, button, select {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #0a0e27;
+  color: #12090d;
   box-shadow: var(--shadow-glow);
 }
 
@@ -749,9 +750,13 @@ input, textarea, button, select {
    SKELETON CONTAINER
    ============================================ */
 .skeleton-container {
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 16px;
+}
+
+.skeleton-container.visible {
+  display: flex;
 }
 
 .skeleton-card {
@@ -791,6 +796,7 @@ input, textarea, button, select {
   border-radius: var(--radius-lg);
 }
 
+.empty-state.visible,
 .empty-state.active {
   display: flex;
 }
