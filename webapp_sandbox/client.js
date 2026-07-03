@@ -49,7 +49,6 @@ function scrollToAbout() {
   }, 100);
 }
 
-// Повноцінна односторінкова валідація форми
 async function submitForm() {
   const nameEl = document.getElementById('input-name');
   const phoneEl = document.getElementById('input-phone');
@@ -91,7 +90,7 @@ function selectGroup(group) {
   resultCard.classList.remove('visible');
   
   if (group === '3_5' || group === '3_3') {
-    revInput.classList.add('visible'); // Працює синхронно з CSS правилом .calc-revenue.visible
+    revInput.classList.add('visible'); 
   } else {
     revInput.classList.remove('visible');
     calculateFixedTax(group);
@@ -141,22 +140,64 @@ function calculateTax() {
   resultCard.classList.add('visible');
 }
 
+// ВИПРАВЛЕНО: Розширене завантаження історії заявок для користувача
 async function loadMyRequests() {
   const list = document.getElementById('requests-list');
+  const empty = document.getElementById('requests-empty');
   list.innerHTML = '';
+  
   try {
     const res = await fetch(`${API_BASE}/api/twa/my-requests?user_id=${userId}`);
     const data = await res.json();
-    if(!data.length) return;
+    
+    if(!data || !data.length) {
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    
+    // Словник статусів для рендерингу преміум бейджів
+    const statusConfig = {
+      pending: { text: 'Очікує ⏳', color: '#f59e0b', bg: '#fef3c7' },
+      in_progress: { text: 'В роботі ⚙️', color: '#3b82f6', bg: '#dbeafe' },
+      completed: { text: 'Виконано ✅', color: '#10b981', bg: '#d1fae5' },
+      rejected: { text: 'Відхилено ❌', color: '#ef4444', bg: '#fee2e2' }
+    };
+
     data.forEach(req => {
+      const dateObj = new Date(req.created_at);
+      const dateStr = dateObj.toLocaleDateString('uk-UA');
+      const timeStr = dateObj.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+      
+      const currentStatus = statusConfig[req.status] || { text: req.status, color: '#6c727f', bg: '#f4f6f9' };
+      
+      // Рендеринг відповіді менеджера LegalTax, якщо вона є
+      let replyBlock = '';
+      if (req.reply_text) {
+        replyBlock = `
+          <div style="margin-top:14px; padding:12px; background:#f8fafc; border-left:3px solid #131316; border-radius:4px;">
+            <div style="font-size:11px; font-weight:700; color:#131316; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.3px;">Відповідь LegalTax:</div>
+            <div style="font-size:12px; color:#334155; line-height:1.5; white-space:pre-line;">${req.reply_text}</div>
+          </div>
+        `;
+      }
+
       list.insertAdjacentHTML('beforeend', `
-        <div class="request-card">
-          <div class="request-header"><span class="request-date">${new Date(req.created_at).toLocaleDateString()}</span></div>
-          <div style="font-size:13px;">${req.text}</div>
+        <div class="request-card" style="margin-bottom:14px; background:#ffffff; padding:16px; border:1px solid #ebeeef; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.01);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-size:11px; font-weight:600; padding:4px 10px; border-radius:20px; color:${currentStatus.color}; background:${currentStatus.bg};">
+              ${currentStatus.text}
+            </span>
+            <span style="font-size:11px; color:#9aa1b1; font-weight:500;">${dateStr} о ${timeStr}</span>
+          </div>
+          <div style="font-size:13px; color:#131316; font-weight:500; line-height:1.5; word-break:break-word;">${req.text}</div>
+          ${replyBlock}
         </div>
       `);
     });
-  } catch(e){}
+  } catch(e){
+    empty.style.display = 'block';
+  }
 }
 
 function showToast(msg) {
