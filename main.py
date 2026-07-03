@@ -47,6 +47,30 @@ async def start_web_server():
     await server.serve()
 
 
+async def keep_alive_ping():
+    """
+    Періодично надсилає HTTP-запити на власну публічну URL-адресу,
+    щоб запобігти переходу інстансу Render у сплячий режим (spin down).
+    """
+    # Зачекаємо 3 хвилини після запуску ботів
+    await asyncio.sleep(180)
+    
+    url = "https://practice-legaltax.onrender.com/"
+    logger.info(f"Запуск фонового пінгу Keep-Alive для: {url}")
+    
+    import aiohttp
+    while True:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, timeout=15.0) as response:
+                    logger.info(f"💤 [KEEP-ALIVE] Результат пінгу {url}: {response.status}")
+        except Exception as e:
+            logger.warning(f"⚠️ [KEEP-ALIVE] Не вдалося надіслати пінг на {url}: {e}")
+            
+        # Інтервал: 10 хвилин (600 секунд)
+        await asyncio.sleep(600)
+
+
 async def main():
     # ─── 1. Перевірка токенів ───
     if config.USER_BOT_TOKEN == "YOUR_BOT_TOKEN_HERE":
@@ -101,6 +125,9 @@ async def main():
 
     # ─── 8. Запуск усіх сервісів паралельно ───
     logger.info("🚀 Запуск ботів та фонових сервісів...")
+
+    # Запускаємо фонову keep-alive задачу
+    asyncio.create_task(keep_alive_ping())
 
     try:
         results = await asyncio.gather(

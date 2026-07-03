@@ -4,6 +4,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import User, RequestForm, AuthSession
 from config import OTP_EXPIRY_SECONDS
+from utils.text_utils import normalize_phone
 
 # --- КОРИСТУВАЧІ (USERS) ---
 
@@ -53,17 +54,18 @@ async def update_user_phone(
     last_name: Optional[str] = None
 ) -> User:
     user = await get_user_by_id(session, user_id)
+    normalized = normalize_phone(phone_number)
     if not user:
         user = User(
             id=user_id,
             username=username,
             first_name=first_name,
             last_name=last_name,
-            phone_number=phone_number
+            phone_number=normalized
         )
         session.add(user)
     else:
-        user.phone_number = phone_number
+        user.phone_number = normalized
     await session.commit()
     await session.refresh(user)
     return user
@@ -79,10 +81,11 @@ async def create_request_form(
     user_id: Optional[int] = None,
     source: str = "bot"
 ) -> RequestForm:
+    normalized = normalize_phone(phone)
     request_form = RequestForm(
         user_id=user_id,
         name=name,
-        phone=phone,
+        phone=normalized,
         text=text,
         source=source
     )
@@ -123,13 +126,14 @@ async def get_user_requests(session: AsyncSession, user_id: int, limit: int = 5)
 # --- СЕСІЇ АУТЕНТИФІКАЦІЇ (AUTH SESSIONS / OTP) ---
 
 async def create_auth_session(session: AsyncSession, phone_number: str, otp_code: str) -> AuthSession:
+    normalized = normalize_phone(phone_number)
     # Видаляємо попередні неактивні сесії для цього номера
     await session.execute(
-        select(AuthSession).where(AuthSession.phone_number == phone_number)
+        select(AuthSession).where(AuthSession.phone_number == normalized)
     )
     
     auth_session = AuthSession(
-        phone_number=phone_number,
+        phone_number=normalized,
         otp_code=otp_code
     )
     session.add(auth_session)
