@@ -86,44 +86,93 @@ async def receive_web_lead(
 ):
     """
     Приймає заявки з сайту LegalTax та пересилає їх адмінам через адмін-бота.
-    Підтримує як прямий плоский JSON, так і вкладені дані з Elementor (form_fields).
+    Підтримує:
+    1. Прямий плоский JSON.
+    2. Elementor JSON (form_fields).
+    3. Elementor URL-encoded form data (стандартний формат Elementor webhook).
     """
-    try:
-        data = await request.json()
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid JSON")
-
-    # Перевіряємо, чи це Elementor webhook (містить form_fields)
-    form_fields = data.get("form_fields", {}) if isinstance(data, dict) else {}
+    content_type = request.headers.get("content-type", "").lower()
     
     name = ""
     phone = ""
     text = ""
+    all_fields = {}
     
-    if form_fields:
-        # Шукаємо за загальними ідентифікаторами
-        name = form_fields.get("name") or form_fields.get("ім'я") or form_fields.get("first_name") or ""
-        phone = form_fields.get("phone") or form_fields.get("телефон") or form_fields.get("phone_number") or ""
-        text = form_fields.get("text") or form_fields.get("message") or form_fields.get("запитання") or form_fields.get("question") or ""
-        
-        # Фолбек-перевірка за частковими назвами ключів
-        for k, v in form_fields.items():
-            k_lower = k.lower()
-            if not name and ("name" in k_lower or "ім" in k_lower or "im" in k_lower):
-                name = v
-            elif not phone and ("phone" in k_lower or "тел" in k_lower or "number" in k_lower):
-                phone = v
-            elif not text and ("text" in k_lower or "mess" in k_lower or "пита" in k_lower or "ques" in k_lower or "зап" in k_lower):
-                text = v
+    # 1. Зчитуємо URL-encoded або Form-data
+    if "application/x-www-form-urlencoded" in content_type or "multipart/form-data" in content_type:
+        try:
+            form_data = await request.form()
+            all_fields.update(dict(form_data))
+        except Exception as e:
+            logging.error(f"Помилка читання form data: {e}")
+            
+    # 2. Зчитуємо JSON
     else:
-        # Прямий плоский JSON
-        name = data.get("name") or ""
-        phone = data.get("phone") or ""
-        text = data.get("text") or data.get("message") or ""
+        try:
+            json_data = await request.json()
+            if isinstance(json_data, dict):
+                all_fields.update(json_data)
+                form_fields = json_data.get("form_fields", {})
+                if isinstance(form_fields, dict):
+                    all_fields.update(form_fields)
+        except Exception as e:
+            logging.error(f"Помилка читання JSON data: {e}")
+
+    # Спроба знайти поля за назвами ключів
+    for k, v in all_fields.items():
+        if not isinstance(v, str):
+            continue
+        v_val = v.strip()
+        if not v_val:
+            continue
+            
+        k_lower = k.lower()
+        if "phone" in k_lower or "тел" in k_lower or "number" in k_lower:
+            phone = v_val
+        elif "name" in k_lower or "ім" in k_lower or "im" in k_lower:
+            name = v_val
+        elif "text" in k_lower or "mess" in k_lower or "пита" in k_lower or "ques" in k_lower or "зап" in k_lower:
+            text = v_val
+
+    # Якщо телефон не знайдено за назвою ключа, шукаємо за форматом значення
+    if not phone:
+        for k, v in all_fields.items():
+            if not isinstance(v, str):
+                continue
+            v_val = v.strip()
+            # Залишаємо лише цифри
+            clean_digits = "".join(filter(str.isdigit, v_val))
+            if 9 <= len(clean_digits) <= 15:
+                phone = v_val
+                break
+
+    # Якщо ім'я не знайдено, беремо будь-яке коротке текстове поле, яке не є телефоном
+    if not name:
+        for k, v in all_fields.items():
+            if not isinstance(v, str):
+                continue
+            v_val = v.strip()
+            if v_val == phone or not v_val:
+                continue
+            if len(v_val) < 40 and v_val != text:
+                name = v_val
+                break
+
+    # Якщо текст не знайдено, беремо перше довше поле
+    if not text:
+        for k, v in all_fields.items():
+            if not isinstance(v, str):
+                continue
+            v_val = v.strip()
+            if v_val == phone or v_val == name or not v_val:
+                continue
+            text = v_val
+            break
 
     if not name:
         name = "Клієнт з сайту"
     if not phone:
+        logging.error(f"Не вдалося знайти телефон. Отримані поля: {all_fields}")
         raise HTTPException(status_code=400, detail="Phone number is required")
 
     async with SessionLocal() as session:
