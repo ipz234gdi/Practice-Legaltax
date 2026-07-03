@@ -1,26 +1,54 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Database
-*.db
-*.sqlite3
-
-# Environment variables / secrets
-.env
-
-# Virtual environment
-.venv/
-env/
-venv/
-ENV/
-
-# IDE files
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.swp
+# Byte-compiled / optimized / DLL files
+
+__pycache__/
+
+*.py[cod]
+
+*$py.class
+
+
+
+# Database
+
+*.db
+
+*.sqlite3
+
+
+
+# Environment variables / secrets
+
+.env
+
+
+
+# Virtual environment
+
+.venv/
+
+env/
+
+venv/
+
+ENV/
+
+
+
+# IDE files
+
+.vscode/
+
+.idea/
+
+*.suo
+
+*.ntvs*
+
+*.njsproj
+
+*.sln
+
+*.swp
+
+.pdf
+.docx

@@ -22,6 +22,10 @@ ADMIN_IDS = [int(x.strip()) for x in ADMIN_IDS_RAW.split(",") if x.strip().isdig
 
 # --- НАЛАШТУВАННЯ БАЗИ ДАНИХ ---
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{BASE_DIR}/legaltax.db")
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+elif DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
 
 # --- НАЛАШТУВАННЯ ПОШТИ (EMAIL) ---
 # Пошта за замовчуванням reiclid@gmail.com
