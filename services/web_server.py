@@ -379,6 +379,7 @@ async def twa_admin_action(
             if req.status not in ["pending", "in_progress"]:
                 raise HTTPException(status_code=400, detail="Заявка вже закрита або відхилена")
             req.status = "completed"
+            req.reply_text = data.reply_text
             await session.commit()
             if req.user_id:
                 try:

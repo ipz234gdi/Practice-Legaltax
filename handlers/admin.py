@@ -602,7 +602,7 @@ async def process_admin_reply_send(message: Message, state: FSMContext, user_bot
 
     # Оновлюємо статус в БД
     async with SessionLocal() as session:
-        req = await update_request_status(session, req_id, "completed")
+        req = await update_request_status(session, req_id, "completed", reply_text=reply_text)
 
     success = False
     if recipient_user_id:

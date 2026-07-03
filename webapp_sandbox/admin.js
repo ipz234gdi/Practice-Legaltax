@@ -530,6 +530,9 @@ function animateSwipeOut(card, direction, callback) {
 }
 
 async function handleSwipeAction(reqId, action) {
+  if (isSwipeProcessing) return;
+  isSwipeProcessing = true;
+
   if (action === 'skip') {
     const req = swipeQueue.find(r => r.id === reqId);
     if (req) {

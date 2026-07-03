@@ -22,8 +22,14 @@ logger = logging.getLogger("LegalTaxBotMain")
 async def init_database():
     """Створює таблиці в базі даних, якщо вони ще не створені"""
     logger.info("Ініціалізація бази даних...")
+    from sqlalchemy import text
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        try:
+            await conn.execute(text("ALTER TABLE request_forms ADD COLUMN reply_text VARCHAR(2000)"))
+            logger.info("Стовпець reply_text успішно додано до таблиці request_forms.")
+        except Exception as e:
+            logger.info("Стовпець reply_text вже існує або не може бути створений.")
     logger.info("Базу даних успішно ініціалізовано.")
 
 
