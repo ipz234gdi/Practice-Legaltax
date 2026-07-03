@@ -140,13 +140,13 @@ async def receive_web_lead(
         ]:
             continue
             
-        if "phone" in k_lower or "тел" in k_lower or "number" in k_lower:
+        if k_lower == "tel" or "tel" in k_lower or "phone" in k_lower or "number" in k_lower:
             phone = v_val
-        elif "name" in k_lower or "ім'" in k_lower or "імя" in k_lower or "имя" in k_lower or k_lower == "ім" or k_lower.startswith("ім ") or k_lower.endswith(" ім") or " ім " in k_lower:
+        elif k_lower == "name" or "name" in k_lower or "ім'" in k_lower or "імя" in k_lower or "имя" in k_lower or k_lower == "ім" or k_lower.startswith("ім ") or k_lower.endswith(" ім") or " ім " in k_lower:
             # Уникаємо запису form_name, time або date як імені користувача
             if "form" not in k_lower and "time" not in k_lower and "date" not in k_lower:
                 name = v_val
-        elif "text" in k_lower or "mess" in k_lower or "пита" in k_lower or "ques" in k_lower or "зап" in k_lower:
+        elif k_lower == "message" or "text" in k_lower or "mess" in k_lower or "пита" in k_lower or "ques" in k_lower or "зап" in k_lower:
             text = v_val
 
     # Якщо телефон не знайдено за назвою ключа, шукаємо за форматом значення
