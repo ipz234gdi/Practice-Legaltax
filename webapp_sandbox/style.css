@@ -470,6 +470,19 @@ html, body {
   color: var(--text-main);
 }
 
+.btn:disabled,
+button:disabled {
+  background-color: #9aa1b1 !important;
+  color: #ffffff !important;
+  border: none !important;
+  cursor: not-allowed !important;
+  opacity: 0.75 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  pointer-events: none !important;
+  animation: none !important;
+}
+
 /* --- Картка результатів калькулятора --- */
 .calc-result {
   display: none;

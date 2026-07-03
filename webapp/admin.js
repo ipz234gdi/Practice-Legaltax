@@ -311,8 +311,6 @@ function renderSwipeCards() {
     
     const cardHtml = `
       <div class="swipe-card" id="swipe-card-${req.id}" data-id="${req.id}" style="z-index: ${10 - idx}; transform: translateY(${idx * 8}px) scale(${1 - idx * 0.04});">
-        <!-- Centered top badge on the card itself -->
-        <div class="card-status-badge"></div>
         
         <div class="swipe-card-inner">
           <div>
@@ -349,7 +347,6 @@ function bindSwipeEvents() {
   let isDragging = false;
 
   const bgBadge = document.getElementById('swipe-bg-badge');
-  const cardBadge = topCard.querySelector('.card-status-badge');
 
   topCard.addEventListener('mousedown', startDrag);
   topCard.addEventListener('touchstart', startDrag, { passive: true });
@@ -386,20 +383,13 @@ function bindSwipeEvents() {
     const rotate = currentX * 0.08;
     topCard.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) rotate(${rotate}deg)`;
 
-    // Tint card background color and show badges (background & top center of card)
+    // Tint card background color and show background badge
     if (currentX > 30) {
       const opacity = Math.min(currentX / 120, 1);
       if (bgBadge) {
         bgBadge.className = 'swipe-bg-badge accept';
         bgBadge.textContent = 'В роботу';
         bgBadge.style.opacity = opacity;
-      }
-      if (cardBadge) {
-        cardBadge.textContent = 'Прийняти ✅';
-        cardBadge.style.color = '#22c55e';
-        cardBadge.style.background = '#d1fae5';
-        cardBadge.style.opacity = opacity;
-        cardBadge.style.transform = 'translateX(-50%) scale(1)';
       }
       const greenTint = Math.min(currentX / 240, 0.15);
       topCard.style.backgroundColor = `rgba(34, 197, 94, ${greenTint})`;
@@ -410,13 +400,6 @@ function bindSwipeEvents() {
         bgBadge.textContent = 'Відхилити';
         bgBadge.style.opacity = opacity;
       }
-      if (cardBadge) {
-        cardBadge.textContent = 'Відхилити ❌';
-        cardBadge.style.color = '#ef4444';
-        cardBadge.style.background = '#fee2e2';
-        cardBadge.style.opacity = opacity;
-        cardBadge.style.transform = 'translateX(-50%) scale(1)';
-      }
       const redTint = Math.min(Math.abs(currentX) / 240, 0.15);
       topCard.style.backgroundColor = `rgba(239, 68, 68, ${redTint})`;
     } else if (currentY < -30) {
@@ -426,23 +409,12 @@ function bindSwipeEvents() {
         bgBadge.textContent = 'Пропустити';
         bgBadge.style.opacity = opacity;
       }
-      if (cardBadge) {
-        cardBadge.textContent = 'Відкласти ⏳';
-        cardBadge.style.color = '#f59e0b';
-        cardBadge.style.background = '#fef3c7';
-        cardBadge.style.opacity = opacity;
-        cardBadge.style.transform = 'translateX(-50%) scale(1)';
-      }
       const yellowTint = Math.min(Math.abs(currentY) / 240, 0.15);
       topCard.style.backgroundColor = `rgba(245, 158, 11, ${yellowTint})`;
     } else {
       if (bgBadge) {
         bgBadge.style.opacity = '0';
         bgBadge.className = 'swipe-bg-badge';
-      }
-      if (cardBadge) {
-        cardBadge.style.opacity = '0';
-        cardBadge.style.transform = 'translateX(-50%) scale(0.9)';
       }
       topCard.style.backgroundColor = '#ffffff';
     }
@@ -467,7 +439,6 @@ function bindSwipeEvents() {
         bgBadge.style.opacity = '0';
         bgBadge.className = 'swipe-bg-badge';
       }
-      if (cardBadge) cardBadge.style.opacity = '0';
       animateSwipeOut(topCard, 'right', () => {
         handleSwipeAction(reqId, 'accept', true);
       });
@@ -477,7 +448,6 @@ function bindSwipeEvents() {
         bgBadge.style.opacity = '0';
         bgBadge.className = 'swipe-bg-badge';
       }
-      if (cardBadge) cardBadge.style.opacity = '0';
       animateSwipeOut(topCard, 'left', () => {
         handleSwipeAction(reqId, 'reject', true);
       });
@@ -487,7 +457,6 @@ function bindSwipeEvents() {
         bgBadge.style.opacity = '0';
         bgBadge.className = 'swipe-bg-badge';
       }
-      if (cardBadge) cardBadge.style.opacity = '0';
       animateSwipeOut(topCard, 'up', () => {
         handleSwipeAction(reqId, 'skip', true);
       });
@@ -497,10 +466,6 @@ function bindSwipeEvents() {
       if (bgBadge) {
         bgBadge.style.opacity = '0';
         bgBadge.className = 'swipe-bg-badge';
-      }
-      if (cardBadge) {
-        cardBadge.style.opacity = '0';
-        cardBadge.style.transform = 'translateX(-50%) scale(0.9)';
       }
     }
   }
