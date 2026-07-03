@@ -37,7 +37,7 @@ EMAIL_CHECK_INTERVAL = int(os.getenv("EMAIL_CHECK_INTERVAL", "60"))
 
 # --- НАЛАШТУВАННЯ ВЕБ-СЕРВЕРУ (FastAPI) ---
 WEB_HOST = os.getenv("WEB_HOST", "0.0.0.0")
-WEB_PORT = int(os.getenv("WEB_PORT", "8000"))
+WEB_PORT = int(os.getenv("PORT", os.getenv("WEB_PORT", "8000")))
 
 # --- НАЛАШТУВАННЯ САЙТУ ---
 SITE_URL = os.getenv("SITE_URL", "https://legaltax.com.ua")
