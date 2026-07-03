@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -12,6 +13,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <div class="app">
 
@@ -28,10 +30,10 @@
 
       <!-- ————— TAB: LIST VIEW ————— -->
       <section class="admin-tab-content active" id="admin-tab-list">
-        
+
         <!-- Кастомна панель фільтрації та сортування -->
         <div class="admin-controls">
-          
+
           <!-- Кастомний селект статусу -->
           <div class="control-group">
             <label class="form-label">Статус фільтра</label>
@@ -41,14 +43,18 @@
                 <i data-lucide="chevron-down" class="dropdown-arrow"></i>
               </div>
               <div class="dropdown-menu">
-                <div class="dropdown-item" data-value="all" onclick="selectDropdownOption('dropdown-status', 'all', 'Всі звернення')">Всі звернення</div>
-                <div class="dropdown-item active" data-value="pending" onclick="selectDropdownOption('dropdown-status', 'pending', 'Нові очікують')">Нові очікують</div>
-                <div class="dropdown-item" data-value="in_progress" onclick="selectDropdownOption('dropdown-status', 'in_progress', 'В роботі')">В роботі</div>
-                <div class="dropdown-item" data-value="completed" onclick="selectDropdownOption('dropdown-status', 'completed', 'Виконано')">Виконано</div>
+                <div class="dropdown-item" data-value="all"
+                  onclick="selectDropdownOption('dropdown-status', 'all', 'Всі звернення')">Всі звернення</div>
+                <div class="dropdown-item active" data-value="pending"
+                  onclick="selectDropdownOption('dropdown-status', 'pending', 'Нові очікують')">Нові очікують</div>
+                <div class="dropdown-item" data-value="in_progress"
+                  onclick="selectDropdownOption('dropdown-status', 'in_progress', 'В роботі')">В роботі</div>
+                <div class="dropdown-item" data-value="completed"
+                  onclick="selectDropdownOption('dropdown-status', 'completed', 'Виконано')">Виконано</div>
               </div>
             </div>
           </div>
-          
+
           <!-- Кастомний селект сортування -->
           <div class="control-group">
             <label class="form-label">Сортування</label>
@@ -58,8 +64,10 @@
                 <i data-lucide="chevron-down" class="dropdown-arrow"></i>
               </div>
               <div class="dropdown-menu">
-                <div class="dropdown-item active" data-value="oldest" onclick="selectDropdownOption('dropdown-sort', 'oldest', 'Спочатку старі')">Спочатку старі</div>
-                <div class="dropdown-item" data-value="newest" onclick="selectDropdownOption('dropdown-sort', 'newest', 'Спочатку нові')">Спочатку нові</div>
+                <div class="dropdown-item active" data-value="oldest"
+                  onclick="selectDropdownOption('dropdown-sort', 'oldest', 'Спочатку старі')">Спочатку старі</div>
+                <div class="dropdown-item" data-value="newest"
+                  onclick="selectDropdownOption('dropdown-sort', 'newest', 'Спочатку нові')">Спочатку нові</div>
               </div>
             </div>
           </div>
@@ -68,7 +76,7 @@
 
         <!-- Контейнер для списку списку заявок -->
         <div id="admin-requests-list"></div>
-        
+
         <div class="empty-state" id="admin-empty" style="display:none; text-align:center; padding:40px 0;">
           <p style="color:var(--text-light); font-size:13px;">Заявок із такими критеріями не знайдено.</p>
         </div>
@@ -76,12 +84,17 @@
 
       <!-- ————— TAB: SWIPE VIEW ————— -->
       <section class="admin-tab-content" id="admin-tab-swipe">
-        <div style="text-align:center; padding:40px 20px;" id="swipe-empty">
+        <div style="text-align:center; padding:20px 20px 10px 20px; color:var(--text-light); font-size:12px;">
+          ← Вліво (Відхилити) | Вгору (Відкласти) | Вправо (В роботу) →
+        </div>
+
+        <div style="text-align:center; padding:40px 20px; display:none;" id="swipe-empty">
           <i data-lucide="sparkles" style="width:40px; height:40px; color:var(--success); margin-bottom:12px;"></i>
           <h3 style="font-size:16px; font-weight:700;">Всі справи розібрано!</h3>
           <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">Немає нових необроблених лідів.</p>
         </div>
-        <div class="swipe-container-wrapper" id="swipe-card-deck"></div>
+
+        <div class="swipe-card-deck" id="swipe-card-deck"></div>
       </section>
 
     </main>
@@ -90,12 +103,14 @@
     <div class="modal" id="reply-modal">
       <div class="modal-card">
         <h3 class="modal-title" style="font-size:16px; font-weight:700;">Надіслати відповідь клієнту</h3>
-        <p class="modal-subtitle" id="reply-modal-subtitle" style="font-size:12px; color:var(--text-light); margin-bottom:12px;"></p>
-        
+        <p class="modal-subtitle" id="reply-modal-subtitle"
+          style="font-size:12px; color:var(--text-light); margin-bottom:12px;"></p>
+
         <div class="form-group">
-          <textarea class="form-textarea" id="reply-text-input" placeholder="Напишіть коментар або рішення LegalTax..." style="height:100px;"></textarea>
+          <textarea class="form-textarea" id="reply-text-input" placeholder="Напишіть коментар або рішення LegalTax..."
+            style="height:100px;"></textarea>
         </div>
-        
+
         <div class="modal-actions">
           <button class="btn btn-secondary" onclick="closeReplyModal()">Скасувати</button>
           <button class="btn btn-primary" onclick="submitAdminReply()" id="btn-submit-reply">Відправити в чат</button>
@@ -115,9 +130,11 @@
       </div>
     </nav>
 
-    <div id="toast-container" style="position:fixed; bottom:85px; left:50%; transform:translateX(-50%); z-index:9999;"></div>
+    <div id="toast-container" style="position:fixed; bottom:85px; left:50%; transform:translateX(-50%); z-index:9999;">
+    </div>
   </div>
 
   <script src="admin.js"></script>
 </body>
+
 </html>
