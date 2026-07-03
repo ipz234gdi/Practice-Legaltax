@@ -22,8 +22,12 @@ router = Router()
 
 def get_admin_home_keyboard() -> ReplyKeyboardMarkup:
     """Reply-клавіатура для адмін-бота (головна панель)"""
+    import config as _cfg
+    from aiogram.types import WebAppInfo
+    webapp_admin_url = _cfg.TWA_URL.rstrip('/') + "/admin.html"
     builder = ReplyKeyboardBuilder()
     builder.row(KeyboardButton(text="🏠 Головна панель"))
+    builder.row(KeyboardButton(text="🚀 Відкрити Admin App", web_app=WebAppInfo(url=webapp_admin_url)))
     return builder.as_markup(resize_keyboard=True)
 
 

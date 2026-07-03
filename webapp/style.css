@@ -11,98 +11,110 @@
 /* --- Custom Properties --- */
 
 :root {
-
   --bg-primary: #12090d;
-
   --bg-secondary: #1d1016;
-
   --bg-tertiary: #2a1720;
-
   --bg-card: #1d1016;
-
   --bg-card-hover: #2a1720;
-
   --bg-input: #150b10;
-
   --bg-glass: rgba(29, 16, 22, 0.65);
-
   --bg-glass-strong: rgba(29, 16, 22, 0.85);
 
-
-
   --accent: #aa4b70;          /* Бордово-малиновий */
-
   --accent-rgb: 170, 75, 112;
-
   --accent2: #e6aebd;         /* Рожеве золото */
-
   --accent2-rgb: 230, 174, 189;
 
-
-
   --brand: #492232;           /* Офіційний бордовий колір сайту */
-
   --brand-rgb: 73, 34, 50;
 
-
-
   --text-primary: #ffffff;
-
   --text-secondary: #e8d7dd;
-
   --text-muted: #a38d96;
-
   --text-dim: #705b63;
 
-
-
   --success: #4caf50;
-
   --success-rgb: 76, 175, 80;
-
   --warning: #ffb300;
-
   --warning-rgb: 255, 179, 0;
-
   --error: #ef5350;
-
   --error-rgb: 239, 83, 80;
 
-
-
   --border-glow: rgba(170, 75, 112, 0.15);
-
   --border-subtle: rgba(163, 141, 150, 0.12);
-
   --border-color: rgba(163, 141, 150, 0.12);
 
-
-
   --radius-sm: 10px;
-
   --radius-md: 14px;
-
   --radius-lg: 20px;
-
   --radius-xl: 24px;
 
-
-
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.3);
-
   --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
-
   --shadow-glow: 0 0 20px rgba(var(--accent-rgb), 0.2);
-
   --shadow-glow-strong: 0 0 30px rgba(var(--accent-rgb), 0.35);
 
-
-
   --transition-fast: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-
   --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- Typography --- */
+  --font-xs: 11px;
+  --font-sm: 13px;
+  --font-md: 15px;
+  --font-lg: 18px;
+  --font-xl: 22px;
+  --font-xxl: 28px;
+  
+  /* --- Spacing --- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-xxl: 24px;
+  --space-3xl: 32px;
+  
+  /* --- Tactile Skeuomorphism --- */
+  --shadow-skeuo-out: 3px 3px 6px rgba(0, 0, 0, 0.45), -3px -3px 6px rgba(255, 255, 255, 0.05);
+  --shadow-skeuo-in: inset 2px 2px 5px rgba(0, 0, 0, 0.5), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+  --border-skeuo: 1px solid rgba(255, 255, 255, 0.05);
+  --bg-gradient-skeuo: linear-gradient(145deg, #24141c, #1a0e14);
+}
+
+body.light-theme {
+  --bg-primary: #f5f2f4;
+  --bg-secondary: #e6dfdf;
+  --bg-tertiary: #dcd2d2;
+  --bg-card: #fdfafb;
+  --bg-card-hover: #eae3e3;
+  --bg-input: #f5f2f4;
+  --bg-glass: rgba(230, 223, 223, 0.75);
+  --bg-glass-strong: rgba(230, 223, 223, 0.95);
+  
+  --accent: #aa4b70;
+  --accent-rgb: 170, 75, 112;
+  --accent2: #492232;
+  --accent2-rgb: 73, 34, 50;
+  
+  --text-primary: #2a1520;
+  --text-secondary: #4a2c3a;
+  --text-muted: #7d6570;
+  --text-dim: #9b8a93;
+  
+  --border-glow: rgba(170, 75, 112, 0.1);
+  --border-subtle: rgba(74, 44, 58, 0.1);
+  --border-color: rgba(74, 44, 58, 0.1);
+  
+  --shadow-skeuo-out: 4px 4px 10px rgba(0, 0, 0, 0.08), -4px -4px 10px rgba(255, 255, 255, 0.95);
+  --shadow-skeuo-in: inset 2px 2px 5px rgba(0, 0, 0, 0.06), inset -2px -2px 5px rgba(255, 255, 255, 0.85);
+  --border-skeuo: 1px solid rgba(255, 255, 255, 0.6);
+  --bg-gradient-skeuo: linear-gradient(145deg, #fdfafb, #e6dfdf);
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.12);
+}
 
   --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
@@ -311,35 +323,20 @@ input, textarea, button, select {
    ============================================ */
 
 .app-header {
-
   position: fixed;
-
   top: 0;
-
   left: 0;
-
   right: 0;
-
   z-index: 100;
-
   height: var(--header-height);
-
   display: flex;
-
   align-items: center;
-
-  justify-content: center;
-
-  gap: 10px;
-
+  justify-content: space-between;
+  padding: 0 16px;
   background: var(--brand);
-
   backdrop-filter: blur(20px) saturate(180%);
-
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 
@@ -2805,4 +2802,95 @@ input, textarea, button, select {
   border-radius: 4px;
   font-family: monospace;
   font-weight: bold;
+}
+
+/* --- Theme Toggle Switch Button --- */
+.theme-toggle-btn {
+  background: var(--bg-tertiary);
+  border: none;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: var(--shadow-skeuo-out);
+  border: var(--border-skeuo);
+}
+
+.theme-toggle-btn:active {
+  box-shadow: var(--shadow-skeuo-in);
+}
+
+.theme-toggle-btn:hover {
+  color: var(--accent);
+}
+
+.theme-toggle-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--text-primary);
+}
+
+/* --- Skeuomorphic Theme Styling Overrides --- */
+.hero-card, 
+.action-card, 
+.info-card, 
+.calc-group-card, 
+.request-card, 
+.swipe-card, 
+.modal-card, 
+.calc-result {
+  box-shadow: var(--shadow-skeuo-out) !important;
+  border: var(--border-skeuo) !important;
+  background: var(--bg-gradient-skeuo) !important;
+}
+
+.btn-primary, 
+.btn-secondary, 
+.btn-swipe-action {
+  box-shadow: var(--shadow-skeuo-out) !important;
+  border: var(--border-skeuo) !important;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:active, 
+.btn-secondary:active, 
+.btn-swipe-action:active {
+  box-shadow: var(--shadow-skeuo-in) !important;
+}
+
+.form-input, 
+.form-textarea, 
+.control-select {
+  box-shadow: var(--shadow-skeuo-in) !important;
+  border: var(--border-skeuo) !important;
+  background-color: var(--bg-input) !important;
+}
+
+/* --- Lucide Icons Global Styles --- */
+.lucide {
+  stroke-width: 2;
+  width: 24px;
+  height: 24px;
+  color: var(--accent);
+}
+
+.nav-item .lucide {
+  color: var(--text-muted);
+  transition: color 0.25s ease;
+}
+
+.nav-item.active .lucide {
+  color: var(--accent);
+}
+
+.success-icon-large {
+  width: 64px;
+  height: 64px;
+  color: var(--success);
+  margin-bottom: 16px;
 }

@@ -74,9 +74,14 @@ async def _show_admin_panel(message: Message):
         f"💡 _Усі нові заявки з сайту, пошти та бота надсилаються сюди автоматично з кнопками швидкої відповіді\\._"
     )
 
+    import config as _cfg
+    from aiogram.types import WebAppInfo
+    webapp_admin_url = _cfg.TWA_URL.rstrip('/') + "/admin.html"
+
     builder = InlineKeyboardBuilder()
     builder.row(InlineKeyboardButton(text="Переглянути очікуючі заявки ⏳📋", callback_data="adm_view_pending"))
     builder.row(InlineKeyboardButton(text="Заявки в роботі ⚙️📋", callback_data="adm_view_in_progress"))
+    builder.row(InlineKeyboardButton(text="🚀 Відкрити Admin Mini App", web_app=WebAppInfo(url=webapp_admin_url)))
 
     await safe_send_or_edit(
         message.answer,

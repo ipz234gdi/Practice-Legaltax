@@ -12,6 +12,7 @@ router = Router()
 
 def get_main_menu_keyboard() -> ReplyKeyboardMarkup:
     """Головне меню клієнтського бота (без адмін-кнопок)"""
+    import config as _cfg
     builder = ReplyKeyboardBuilder()
     builder.row(
         KeyboardButton(text="Особистий кабінет 👤"),
@@ -20,6 +21,9 @@ def get_main_menu_keyboard() -> ReplyKeyboardMarkup:
     builder.row(
         KeyboardButton(text="Калькулятор податків 📊"),
         KeyboardButton(text="Про LegalTax ℹ️")
+    )
+    builder.row(
+        KeyboardButton(text="🚀 Відкрити LegalTax App", web_app=WebAppInfo(url=_cfg.TWA_URL))
     )
     return builder.as_markup(resize_keyboard=True)
 
