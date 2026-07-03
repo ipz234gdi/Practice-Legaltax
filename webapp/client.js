@@ -124,7 +124,7 @@ async function submitForm() {
       btn.disabled = false;
       btn.textContent = 'Надіслати в LegalTax';
     }
-    navigateTo('home');
+    navigateTo('requests');
   } catch (err) {
     showToast('Помилка сервера при відправці', 'error');
     if (btn) {

@@ -187,7 +187,8 @@ async def twa_get_my_requests(user_id: int):
             "text": req.text,
             "status": req.status,
             "source": req.source,
-            "created_at": req.created_at.isoformat() if req.created_at else None
+            "reply_text": req.reply_text,
+            "created_at": (req.created_at.isoformat() + "Z") if req.created_at else None
         }
         for req in requests
     ]
@@ -245,7 +246,7 @@ async def twa_get_user_info(user_id: int):
             "first_name": user.first_name,
             "last_name": user.last_name,
             "phone": user.phone_number,
-            "created_at": user.created_at.isoformat() if user.created_at else None
+            "created_at": (user.created_at.isoformat() + "Z") if user.created_at else None
         },
         "stats": {
             "pending": stats.get("pending", 0),
@@ -282,7 +283,8 @@ async def twa_get_admin_requests(admin_id: int, status: Optional[str] = None):
             "text": req.text,
             "status": req.status,
             "source": req.source,
-            "created_at": req.created_at.isoformat() if req.created_at else None
+            "reply_text": req.reply_text,
+            "created_at": (req.created_at.isoformat() + "Z") if req.created_at else None
         }
         for req in requests
     ]
@@ -313,7 +315,8 @@ async def twa_get_admin_pending(admin_id: int):
             "text": req.text,
             "status": req.status,
             "source": req.source,
-            "created_at": req.created_at.isoformat() if req.created_at else None
+            "reply_text": req.reply_text,
+            "created_at": (req.created_at.isoformat() + "Z") if req.created_at else None
         }
         for req in requests
     ]

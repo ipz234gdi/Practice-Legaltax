@@ -14,6 +14,9 @@ let activeReplyRequestId = null;
 let activeStatusFilter = 'pending';
 let activeSortOrder = 'oldest';
 
+// Concurrency lock to prevent double-swiping while card animations or modals are active
+let isSwipeProcessing = false;
+
 // ─── DOM Ready ────────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
   initTheme();
@@ -105,6 +108,7 @@ function toggleDropdown(id) {
   });
 }
 
+// ─── Select dropdown filter options ───
 function selectDropdownOption(dropdownId, value, text) {
   const dropdown = document.getElementById(dropdownId);
   if (dropdown) {
@@ -143,6 +147,9 @@ function switchAdminTab(tabId) {
   document.querySelectorAll('.nav-item').forEach(item => {
     item.classList.toggle('active', item.id === `nav-item-${tabId}`);
   });
+  
+  // Reset swipe lock when switching tabs
+  isSwipeProcessing = false;
   
   if (tabId === 'list') {
     loadAdminRequests();
@@ -264,6 +271,7 @@ async function loadAdminSwipeDeck() {
   
   deck.innerHTML = '';
   empty.style.display = 'none';
+  isSwipeProcessing = false;
   
   try {
     const res = await fetch(`${API_BASE}/api/twa/admin/requests?admin_id=${userId}&status=pending`);
@@ -273,6 +281,9 @@ async function loadAdminSwipeDeck() {
       empty.style.display = 'block';
       return;
     }
+    
+    // Sort oldest first for deck queue
+    requests.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     
     swipeQueue = requests;
     swipeActiveCardIndex = 0;
@@ -289,20 +300,25 @@ function renderSwipeCards() {
   const currentCards = swipeQueue.slice(swipeActiveCardIndex, swipeActiveCardIndex + 3);
   if(!currentCards.length) {
     document.getElementById('swipe-empty').style.display = 'block';
+    isSwipeProcessing = false;
     return;
   }
   
   currentCards.forEach((req, idx) => {
     const date = new Date(req.created_at).toLocaleDateString('uk-UA');
+    const time = new Date(req.created_at).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
     const phone = req.phone ? formatPhone(req.phone) : '';
     
     const cardHtml = `
       <div class="swipe-card" id="swipe-card-${req.id}" data-id="${req.id}" style="z-index: ${10 - idx}; transform: translateY(${idx * 8}px) scale(${1 - idx * 0.04});">
+        <!-- Centered top badge on the card itself -->
+        <div class="card-status-badge"></div>
+        
         <div class="swipe-card-inner">
           <div>
             <div style="display:flex; justify-content:space-between; font-size:11px; color:#9aa1b1; margin-bottom:8px;">
               <span>Заявка №${req.id}</span>
-              <span>${date}</span>
+              <span>${date} о ${time}</span>
             </div>
             <h3 style="font-size:16px; font-weight:700; margin-bottom:4px; color:#0f172a;">${escapeHtml(req.name || 'Без імені')}</h3>
             ${phone ? `<a href="tel:${phone}" style="font-size:12px; color:#aa4b70; text-decoration:none; display:inline-block; margin-bottom:8px; font-weight:500;">${phone}</a>` : ''}
@@ -333,11 +349,13 @@ function bindSwipeEvents() {
   let isDragging = false;
 
   const bgBadge = document.getElementById('swipe-bg-badge');
+  const cardBadge = topCard.querySelector('.card-status-badge');
 
   topCard.addEventListener('mousedown', startDrag);
   topCard.addEventListener('touchstart', startDrag, { passive: true });
 
   function startDrag(e) {
+    if (isSwipeProcessing) return; // Prevent double swiping
     isDragging = true;
     topCard.classList.add('dragging');
 
@@ -368,13 +386,20 @@ function bindSwipeEvents() {
     const rotate = currentX * 0.08;
     topCard.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) rotate(${rotate}deg)`;
 
-    // Tint card background color and show center background action text
+    // Tint card background color and show badges (background & top center of card)
     if (currentX > 30) {
       const opacity = Math.min(currentX / 120, 1);
       if (bgBadge) {
         bgBadge.className = 'swipe-bg-badge accept';
         bgBadge.textContent = 'В роботу';
         bgBadge.style.opacity = opacity;
+      }
+      if (cardBadge) {
+        cardBadge.textContent = 'Прийняти ✅';
+        cardBadge.style.color = '#22c55e';
+        cardBadge.style.background = '#d1fae5';
+        cardBadge.style.opacity = opacity;
+        cardBadge.style.transform = 'translateX(-50%) scale(1)';
       }
       const greenTint = Math.min(currentX / 240, 0.15);
       topCard.style.backgroundColor = `rgba(34, 197, 94, ${greenTint})`;
@@ -385,6 +410,13 @@ function bindSwipeEvents() {
         bgBadge.textContent = 'Відхилити';
         bgBadge.style.opacity = opacity;
       }
+      if (cardBadge) {
+        cardBadge.textContent = 'Відхилити ❌';
+        cardBadge.style.color = '#ef4444';
+        cardBadge.style.background = '#fee2e2';
+        cardBadge.style.opacity = opacity;
+        cardBadge.style.transform = 'translateX(-50%) scale(1)';
+      }
       const redTint = Math.min(Math.abs(currentX) / 240, 0.15);
       topCard.style.backgroundColor = `rgba(239, 68, 68, ${redTint})`;
     } else if (currentY < -30) {
@@ -394,12 +426,23 @@ function bindSwipeEvents() {
         bgBadge.textContent = 'Пропустити';
         bgBadge.style.opacity = opacity;
       }
+      if (cardBadge) {
+        cardBadge.textContent = 'Відкласти ⏳';
+        cardBadge.style.color = '#f59e0b';
+        cardBadge.style.background = '#fef3c7';
+        cardBadge.style.opacity = opacity;
+        cardBadge.style.transform = 'translateX(-50%) scale(1)';
+      }
       const yellowTint = Math.min(Math.abs(currentY) / 240, 0.15);
       topCard.style.backgroundColor = `rgba(245, 158, 11, ${yellowTint})`;
     } else {
       if (bgBadge) {
         bgBadge.style.opacity = '0';
         bgBadge.className = 'swipe-bg-badge';
+      }
+      if (cardBadge) {
+        cardBadge.style.opacity = '0';
+        cardBadge.style.transform = 'translateX(-50%) scale(0.9)';
       }
       topCard.style.backgroundColor = '#ffffff';
     }
@@ -419,26 +462,32 @@ function bindSwipeEvents() {
     const thresholdY = -120;
 
     if (currentX > thresholdX) {
+      isSwipeProcessing = true; // Lock actions
       if (bgBadge) {
         bgBadge.style.opacity = '0';
         bgBadge.className = 'swipe-bg-badge';
       }
+      if (cardBadge) cardBadge.style.opacity = '0';
       animateSwipeOut(topCard, 'right', () => {
         handleSwipeAction(reqId, 'accept');
       });
     } else if (currentX < -thresholdX) {
+      isSwipeProcessing = true; // Lock actions
       if (bgBadge) {
         bgBadge.style.opacity = '0';
         bgBadge.className = 'swipe-bg-badge';
       }
+      if (cardBadge) cardBadge.style.opacity = '0';
       animateSwipeOut(topCard, 'left', () => {
         handleSwipeAction(reqId, 'reject');
       });
     } else if (currentY < thresholdY) {
+      isSwipeProcessing = true; // Lock actions
       if (bgBadge) {
         bgBadge.style.opacity = '0';
         bgBadge.className = 'swipe-bg-badge';
       }
+      if (cardBadge) cardBadge.style.opacity = '0';
       animateSwipeOut(topCard, 'up', () => {
         handleSwipeAction(reqId, 'skip');
       });
@@ -448,6 +497,10 @@ function bindSwipeEvents() {
       if (bgBadge) {
         bgBadge.style.opacity = '0';
         bgBadge.className = 'swipe-bg-badge';
+      }
+      if (cardBadge) {
+        cardBadge.style.opacity = '0';
+        cardBadge.style.transform = 'translateX(-50%) scale(0.9)';
       }
     }
   }
@@ -485,12 +538,14 @@ async function handleSwipeAction(reqId, action) {
       renderSwipeCards();
       showToast('Заявку відкладено ⏳');
     }
+    isSwipeProcessing = false; // Reset lock
     return;
   }
 
   if (action === 'reject') {
     if (!confirm('Ви впевнені, що хочете відхилити цю заявку?')) {
       loadAdminSwipeDeck();
+      isSwipeProcessing = false;
       return;
     }
   }
@@ -506,6 +561,7 @@ async function handleSwipeAction(reqId, action) {
       const errData = await res.json();
       showToast(errData.detail || 'Помилка виконання дії');
       loadAdminSwipeDeck();
+      isSwipeProcessing = false;
       return;
     }
     
@@ -519,6 +575,7 @@ async function handleSwipeAction(reqId, action) {
         closeReplyModal = originalClose; // restore
         swipeActiveCardIndex++;
         renderSwipeCards();
+        isSwipeProcessing = false; // Unlock only when modal closes
       };
       
       const originalSubmit = submitAdminReply;
@@ -530,10 +587,12 @@ async function handleSwipeAction(reqId, action) {
       showToast('Заявку відхилено! ❌');
       swipeActiveCardIndex++;
       renderSwipeCards();
+      isSwipeProcessing = false; // Unlock
     }
   } catch(e) {
     showToast('Помилка обробки дії');
     loadAdminSwipeDeck();
+    isSwipeProcessing = false;
   }
 }
 
@@ -575,12 +634,22 @@ function openReplyModal(requestId) {
 
 function closeReplyModal() {
   document.getElementById('reply-modal').classList.remove('active');
+  // Reset lock if modal closed manually
+  isSwipeProcessing = false;
 }
 
 async function submitAdminReply() {
   const text = document.getElementById('reply-text-input').value.trim();
   if(!text) return;
   
+  const btn = document.getElementById('btn-submit-reply');
+  if (btn && btn.disabled) return; // Prevent double clicks on reply sending
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Надсилаємо...';
+  }
+
   try {
     const res = await fetch(`${API_BASE}/api/twa/admin/action`, {
       method: 'POST',
@@ -599,6 +668,11 @@ async function submitAdminReply() {
     if(currentAdminTab === 'list') loadAdminRequests();
   } catch(e){
     showToast('Помилка відправки відповіді');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Відправити в чат';
+    }
   }
 }
 
