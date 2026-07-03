@@ -434,6 +434,12 @@ html, body {
   transition: all 0.15s ease;
 }
 
+.form-textarea {
+  resize: none;
+  min-height: 80px;
+  overflow-y: hidden;
+}
+
 .form-input:focus, .form-textarea:focus, .control-select:focus {
   border-color: var(--text-main);
   background: var(--bg-canvas);

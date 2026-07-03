@@ -33,6 +33,15 @@ window.addEventListener('DOMContentLoaded', async () => {
     username = 'test_user';
   }
   navigateTo('home');
+  
+  const textEl = document.getElementById('input-text');
+  if (textEl) {
+    textEl.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = (this.scrollHeight) + 'px';
+    });
+  }
+
   try { lucide.createIcons(); } catch (e) {}
 });
 
