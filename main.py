@@ -67,7 +67,7 @@ async def main():
 
     # 5. Запуск тунелю для HTTPS доступу до Mini App
     logger.info("Перевірка доступності TWA та запуск тунелю...")
-    twa_url = await start_tunnel(config.WEB_PORT)
+    twa_url = await start_tunnel(bot, config.WEB_PORT)
     if twa_url:
         logger.info(f"🌐 Mini App доступний за адресою: {twa_url}")
     else:
@@ -78,10 +78,12 @@ async def main():
     logger.info("Запуск бота та фонових сервісів...")
     
     try:
-        await asyncio.gather(
+        # return_exceptions=True — якщо тунель впаде, бот і сервер продовжать працювати
+        results = await asyncio.gather(
             dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types()),
             start_web_server(),
-            email_monitor_loop(bot)
+            email_monitor_loop(bot),
+            return_exceptions=True
         )
         # Логуємо помилки задач, якщо вони були
         for i, result in enumerate(results):
