@@ -132,15 +132,19 @@ async def receive_web_lead(
             
         k_lower = k.lower()
         
-        # Ігноруємо технічні метадані Elementor
-        if k_lower in ["form_name", "form_id", "post_id"]:
+        # Ігноруємо технічні метадані Elementor та дати/час
+        if k_lower in [
+            "form_name", "form_id", "post_id", "date", "time", 
+            "user agent", "user_agent", "remote ip", "remote_ip", 
+            "powered by", "page url", "page_url", "referer", "url"
+        ]:
             continue
             
         if "phone" in k_lower or "тел" in k_lower or "number" in k_lower:
             phone = v_val
-        elif "name" in k_lower or "ім" in k_lower or "im" in k_lower:
-            # Уникаємо запису form_name як імені користувача
-            if "form" not in k_lower:
+        elif "name" in k_lower or "ім'" in k_lower or "імя" in k_lower or "имя" in k_lower or k_lower == "ім" or k_lower.startswith("ім ") or k_lower.endswith(" ім") or " ім " in k_lower:
+            # Уникаємо запису form_name, time або date як імені користувача
+            if "form" not in k_lower and "time" not in k_lower and "date" not in k_lower:
                 name = v_val
         elif "text" in k_lower or "mess" in k_lower or "пита" in k_lower or "ques" in k_lower or "зап" in k_lower:
             text = v_val
@@ -151,6 +155,13 @@ async def receive_web_lead(
             if not isinstance(v, str):
                 continue
             v_val = v.strip()
+            k_lower = k.lower()
+            if k_lower in [
+                "form_name", "form_id", "post_id", "date", "time", 
+                "user agent", "user_agent", "remote ip", "remote_ip", 
+                "powered by", "page url", "page_url", "referer", "url"
+            ] or "form" in k_lower or "time" in k_lower or "date" in k_lower:
+                continue
             # Залишаємо лише цифри
             clean_digits = "".join(filter(str.isdigit, v_val))
             if 9 <= len(clean_digits) <= 15:
@@ -164,7 +175,11 @@ async def receive_web_lead(
                 continue
             v_val = v.strip()
             k_lower = k.lower()
-            if k_lower in ["form_name", "form_id", "post_id"] or "form" in k_lower:
+            if k_lower in [
+                "form_name", "form_id", "post_id", "date", "time", 
+                "user agent", "user_agent", "remote ip", "remote_ip", 
+                "powered by", "page url", "page_url", "referer", "url"
+            ] or "form" in k_lower or "time" in k_lower or "date" in k_lower:
                 continue
             if v_val == phone or not v_val:
                 continue
@@ -179,7 +194,11 @@ async def receive_web_lead(
                 continue
             v_val = v.strip()
             k_lower = k.lower()
-            if k_lower in ["form_name", "form_id", "post_id"] or "form" in k_lower:
+            if k_lower in [
+                "form_name", "form_id", "post_id", "date", "time", 
+                "user agent", "user_agent", "remote ip", "remote_ip", 
+                "powered by", "page url", "page_url", "referer", "url"
+            ] or "form" in k_lower or "time" in k_lower or "date" in k_lower:
                 continue
             if v_val == phone or v_val == name or not v_val:
                 continue
