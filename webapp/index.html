@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#492232">
-  <meta name="description" content="LegalTax — бухгалтерські та юридичні послуги для ФОП та бізнесу">
+  <meta name="theme-color" content="#131316">
+  <meta name="description" content="LegalTax — бухгалтерські послуги">
   <title>LegalTax App</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,295 +18,156 @@
 
     <!-- ===== HEADER ===== -->
     <header class="app-header">
-      <div style="display: flex; flex-direction: column; align-items: flex-start;">
+      <div style="display: flex; flex-direction: column;">
         <span class="logo">LegalTax</span>
-        <span class="subtitle">Бухгалтерія & Право</span>
+        <span class="subtitle">Бухгалтерія & Право України</span>
       </div>
-      <button class="theme-toggle-btn" onclick="toggleTheme()" id="theme-toggle-btn" title="Змінити тему">
-        <svg class="theme-toggle-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-          <path id="theme-icon-path" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-        </svg>
-      </button>
     </header>
 
-    <!-- ===== CONTENT ===== -->
+    <!-- ===== MAIN CONTENT ===== -->
     <main class="app-content">
 
       <!-- ————— HOME PAGE ————— -->
       <section class="page active" id="page-home">
-
         <div class="hero-card">
-          <div class="hero-greeting">Вітаємо 👋</div>
-          <h1 class="hero-title" id="hero-name">Раді бачити вас!</h1>
-          <p class="hero-description">
-            Ваш особистий помічник з бухгалтерських та юридичних питань. Оберіть потрібну дію нижче.
-          </p>
+          <div class="hero-greeting">Консалтинг для бізнесу</div>
+          <h1 class="hero-title" id="hero-name">Вітаємо вас!</h1>
+          <p class="hero-description">Ваш особистий кабінет для взаємодії з LegalTax. Керуйте податками та юридичними справами без стресу.</p>
         </div>
 
         <div class="action-grid">
           <div class="action-card" onclick="navigateTo('form')">
-            <span class="card-icon">
-              <i data-lucide="file-text"></i>
-            </span>
-            <span class="card-title">Залишити заявку</span>
+            <div class="card-icon"><i data-lucide="file-plus-2"></i></div>
+            <span class="card-title">Нова заявка</span>
           </div>
           <div class="action-card" onclick="navigateTo('requests')">
-            <span class="card-icon">
-              <i data-lucide="folder-open"></i>
-            </span>
-            <span class="card-title">Мої заявки</span>
+            <div class="card-icon"><i data-lucide="briefcase"></i></div>
+            <span class="card-title">Мої справи</span>
           </div>
           <div class="action-card" onclick="navigateTo('calculator')">
-            <span class="card-icon">
-              <i data-lucide="calculator"></i>
-            </span>
-            <span class="card-title">Калькулятор податків</span>
+            <div class="card-icon"><i data-lucide="pie-chart"></i></div>
+            <span class="card-title">Податки 2026</span>
           </div>
           <div class="action-card" onclick="scrollToAbout()">
-            <span class="card-icon">
-              <i data-lucide="info"></i>
-            </span>
-            <span class="card-title">Про LegalTax</span>
+            <div class="card-icon"><i data-lucide="help-circle"></i></div>
+            <span class="card-title">Про компанію</span>
           </div>
         </div>
 
-        <div class="section-divider"></div>
-
-        <!-- About section integrated into home -->
-        <div id="about-section">
-          <h2 class="page-title">Про нас</h2>
+        <div id="about-section" style="margin-top: 12px;">
           <div class="info-cards">
             <div class="info-card">
-              <span class="info-icon">
-                <i data-lucide="scale"></i>
-              </span>
+              <div class="info-icon"><i data-lucide="scale"></i></div>
               <div class="info-content">
-                <div class="info-title">Юридичні послуги</div>
-                <div class="info-text">Реєстрація ФОП, ТОВ, ліцензування, договори та правовий супровід бізнесу.</div>
+                <div class="info-title">Юридичний супровід</div>
+                <div class="info-text">Реєстрація бізнесу, розробка контрактів, юридичний аудит.</div>
               </div>
             </div>
             <div class="info-card">
-              <span class="info-icon">
-                <i data-lucide="book-open"></i>
-              </span>
+              <div class="info-icon"><i data-lucide="landmark"></i></div>
               <div class="info-content">
-                <div class="info-title">Бухгалтерський облік</div>
-                <div class="info-text">Ведення обліку, подання звітності, оптимізація оподаткування для ФОП та компаній.</div>
-              </div>
-            </div>
-            <div class="info-card">
-              <span class="info-icon">
-                <i data-lucide="trending-up"></i>
-              </span>
-              <div class="info-content">
-                <div class="info-title">Податкове консультування</div>
-                <div class="info-text">Вибір оптимальної системи оподаткування, перевірки та захист інтересів.</div>
-              </div>
-            </div>
-            <div class="info-card">
-              <span class="info-icon">
-                <i data-lucide="message-square"></i>
-              </span>
-              <div class="info-content">
-                <div class="info-title">Підтримка 24/7</div>
-                <div class="info-text">Оперативні відповіді через Telegram бот та особистий кабінет у додатку.</div>
+                <div class="info-title">Податковий облік</div>
+                <div class="info-text">Подання звітності ФОП, ведення книг обліку, оптимізація.</div>
               </div>
             </div>
           </div>
-        </div>
-
-      </section>
-
-      <!-- ————— FORM PAGE ————— -->
-      <section class="page" id="page-form">
-        <h2 class="page-title">Нова заявка</h2>
-        <p class="page-subtitle">Заповніть форму і ми зв'яжемося з вами найближчим часом.</p>
-
-        <!-- Step Indicators -->
-        <div class="step-indicators">
-          <div class="step-indicator">
-            <div class="step-circle active" id="step-circle-1">1</div>
-          </div>
-          <div class="step-line" id="step-line-1"></div>
-          <div class="step-indicator">
-            <div class="step-circle" id="step-circle-2">2</div>
-          </div>
-          <div class="step-line" id="step-line-2"></div>
-          <div class="step-indicator">
-            <div class="step-circle" id="step-circle-3">3</div>
-          </div>
-        </div>
-
-        <!-- Step Labels -->
-        <div style="display:flex; justify-content:space-between; margin-bottom:28px; padding:0 8px;">
-          <span style="font-size:11px; color:var(--text-dim); font-weight:500;">Ім'я</span>
-          <span style="font-size:11px; color:var(--text-dim); font-weight:500;">Телефон</span>
-          <span style="font-size:11px; color:var(--text-dim); font-weight:500;">Опис</span>
-        </div>
-
-        <div class="form-container">
-          <!-- Step 1: Name -->
-          <div class="form-step active" id="form-step-1">
-            <div class="form-group">
-              <label class="form-label" for="input-name">Ваше ім'я</label>
-              <input type="text" class="form-input" id="input-name" placeholder="Введіть ваше ім'я" autocomplete="name">
-              <div class="form-error" id="error-name">Будь ласка, введіть ваше ім'я</div>
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-primary btn-full" onclick="nextStep()">Далі →</button>
-            </div>
-          </div>
-
-          <!-- Step 2: Phone -->
-          <div class="form-step" id="form-step-2">
-            <div class="form-group">
-              <label class="form-label" for="input-phone">Номер телефону</label>
-              <input type="tel" class="form-input" id="input-phone" placeholder="+380 XX XXX XX XX" autocomplete="tel">
-              <div class="form-hint">Введіть номер у форматі +380...</div>
-              <div class="form-error" id="error-phone">Невірний номер телефону</div>
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-secondary" onclick="prevStep()">← Назад</button>
-              <button class="btn btn-primary" onclick="nextStep()">Далі →</button>
-            </div>
-          </div>
-
-          <!-- Step 3: Description -->
-          <div class="form-step" id="form-step-3">
-            <div class="form-group">
-              <label class="form-label" for="input-text">Опишіть ваше питання</label>
-              <textarea class="form-textarea" id="input-text" placeholder="Детально опишіть, з чим вам потрібна допомога..."></textarea>
-              <div class="form-error" id="error-text">Будь ласка, опишіть ваше питання</div>
-            </div>
-            <div class="btn-row">
-              <button class="btn btn-secondary" onclick="prevStep()">← Назад</button>
-              <button class="btn btn-primary" onclick="submitForm()" id="btn-submit">Надіслати ✓</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Success Screen -->
-        <div class="success-screen" id="form-success">
-          <i data-lucide="check-circle-2" class="success-icon-large"></i>
-          <h3 class="success-title">Заявку надіслано!</h3>
-          <p class="success-text">Дякуємо! Наш спеціаліст зв'яжеться з вами найближчим часом.</p>
-          <button class="btn btn-primary btn-full" onclick="resetForm()">На головну</button>
-        </div>
-      </section>
-
-      <!-- ————— REQUESTS PAGE ————— -->
-      <section class="page" id="page-requests">
-        <h2 class="page-title">Мої заявки</h2>
-        <p class="page-subtitle">Історія ваших звернень та їх статуси.</p>
-
-        <!-- Loading Skeleton -->
-        <div class="skeleton-container" id="requests-skeleton">
-          <div class="skeleton-card">
-            <div class="skeleton-line short"></div>
-            <div class="skeleton-line long"></div>
-            <div class="skeleton-line medium"></div>
-          </div>
-          <div class="skeleton-card">
-            <div class="skeleton-line short"></div>
-            <div class="skeleton-line long"></div>
-            <div class="skeleton-line medium"></div>
-          </div>
-        </div>
-
-        <!-- Request Cards Container -->
-        <div id="requests-list"></div>
-
-        <!-- Empty State -->
-        <div class="empty-state" id="requests-empty">
-          <i data-lucide="inbox" style="width: 48px; height: 48px; color: var(--text-dim); margin-bottom: 12px;"></i>
-          <h3 class="empty-title">Заявок ще немає</h3>
-          <p class="empty-text">Ви ще не залишали заявок. Створіть першу, і вона з'явиться тут.</p>
-          <button class="btn btn-primary btn-sm" onclick="navigateTo('form')">Створити заявку</button>
         </div>
       </section>
 
       <!-- ————— CALCULATOR PAGE ————— -->
       <section class="page" id="page-calculator">
-        <h2 class="page-title">Калькулятор податків</h2>
-        <p class="page-subtitle">Розрахуйте податки та внески для ФОП за обраною групою.</p>
-
-        <!-- Group Selection -->
-        <div class="calc-groups" id="calc-groups">
+        <div class="calc-groups">
           <div class="calc-group-card" onclick="selectGroup(1)" data-group="1">
-            <span class="group-dot dot-1"></span>
             <span class="group-name">ФОП 1 група</span>
-            <span class="group-rate">302.80 ₴/міс</span>
+            <span class="group-rate">10% прожиткового мін.</span>
           </div>
           <div class="calc-group-card" onclick="selectGroup(2)" data-group="2">
-            <span class="group-dot dot-2"></span>
             <span class="group-name">ФОП 2 група</span>
-            <span class="group-rate">1 600 ₴/міс</span>
+            <span class="group-rate">20% мінімальної зп</span>
           </div>
           <div class="calc-group-card" onclick="selectGroup('3_5')" data-group="3_5">
-            <span class="group-dot dot-3_5"></span>
             <span class="group-name">ФОП 3 (5%)</span>
-            <span class="group-rate">5% від доходу</span>
+            <span class="group-rate">Без ПДВ від доходу</span>
           </div>
           <div class="calc-group-card" onclick="selectGroup('3_3')" data-group="3_3">
-            <span class="group-dot dot-3_3"></span>
-            <span class="group-name">ФОП 3 (3%+ПДВ)</span>
-            <span class="group-rate">3% + ПДВ</span>
+            <span class="group-name">ФОП 3 (3%)</span>
+            <span class="group-rate">+ ПДВ 20%</span>
           </div>
         </div>
 
-        <!-- Revenue Input (for group 3) -->
+        <!-- Виправлено: видалено inline display:none, керування через CSS клас -->
         <div class="calc-revenue" id="calc-revenue">
           <div class="form-group">
-            <label class="form-label" for="input-revenue">Дохід за квартал (₴)</label>
-            <input type="number" class="form-input" id="input-revenue" placeholder="Введіть суму доходу" inputmode="numeric">
-            <div class="form-hint">Вкажіть суму доходу за один квартал</div>
+            <label class="form-label" for="input-revenue">Отриманий дохід за квартал (₴)</label>
+            <input type="number" class="form-input" id="input-revenue" placeholder="Введіть суму">
           </div>
-          <button class="btn btn-primary btn-full" onclick="calculateTax()">Розрахувати</button>
+          <button class="btn btn-primary" onclick="calculateTax()">Розрахувати податки</button>
         </div>
 
-        <!-- Result Card -->
         <div class="calc-result" id="calc-result">
-          <div class="calc-result-title">Результати розрахунку</div>
+          <div class="calc-result-title">Фіскальний розрахунок 2026</div>
           <div id="calc-result-rows"></div>
           <div class="calc-result-note" id="calc-result-note"></div>
         </div>
       </section>
 
+      <!-- ————— FORM PAGE ————— -->
+      <section class="page" id="page-form">
+        <div class="form-container">
+          <div class="form-group">
+            <label class="form-label">Ваше ім'я або назва компанії</label>
+            <input type="text" class="form-input" id="input-name" placeholder="Введіть дані">
+            <span id="error-name" class="form-error-msg" style="color:var(--error); font-size:12px; display:none; margin-top:4px;">Обов'язкове поле</span>
+          </div>
+          
+          <div class="form-group" style="margin-top: 16px;">
+            <label class="form-label">Контактний телефон</label>
+            <input type="tel" class="form-input" id="input-phone" placeholder="+380">
+            <span id="error-phone" class="form-error-msg" style="color:var(--error); font-size:12px; display:none; margin-top:4px;">Перевірте формат номера</span>
+          </div>
+          
+          <div class="form-group" style="margin-top: 16px;">
+            <label class="form-label">Опишіть завдання / питання</label>
+            <textarea class="form-textarea" id="input-text" placeholder="Яка послуга консалтингу чи обліку вас цікавить?"></textarea>
+            <span id="error-text" class="form-error-msg" style="color:var(--error); font-size:12px; display:none; margin-top:4px;">Опишіть ваше питання</span>
+          </div>
+          
+          <button class="btn btn-primary" style="margin-top: 24px;" onclick="submitForm()">Надіслати в LegalTax</button>
+        </div>
+      </section>
+
+      <!-- ————— REQUESTS PAGE ————— -->
+      <section class="page" id="page-requests">
+        <div id="requests-list"></div>
+        <div class="empty-state" id="requests-empty">
+          <p style="text-align:center; color:var(--text-light); font-size:13px;">У вас немає активних заявок.</p>
+        </div>
+      </section>
+
     </main>
 
-    <!-- ===== BOTTOM NAVIGATION ===== -->
+    <!-- ===== NAVIGATION BAR ===== -->
     <nav class="bottom-nav">
       <div class="nav-item active" data-page="home" onclick="navigateTo('home')">
-        <span class="nav-icon">
-          <i data-lucide="home"></i>
-        </span>
+        <i data-lucide="layout-dashboard"></i>
         <span class="nav-label">Головна</span>
       </div>
       <div class="nav-item" data-page="form" onclick="navigateTo('form')">
-        <span class="nav-icon">
-          <i data-lucide="plus-circle"></i>
-        </span>
+        <i data-lucide="file-text"></i>
         <span class="nav-label">Заявка</span>
       </div>
       <div class="nav-item" data-page="requests" onclick="navigateTo('requests')">
-        <span class="nav-icon">
-          <i data-lucide="list"></i>
-        </span>
-        <span class="nav-label">Заявки</span>
+        <i data-lucide="briefcase"></i>
+        <span class="nav-label">Справи</span>
       </div>
       <div class="nav-item" data-page="calculator" onclick="navigateTo('calculator')">
-        <span class="nav-icon">
-          <i data-lucide="calculator"></i>
-        </span>
-        <span class="nav-label">Калькулятор</span>
+        <i data-lucide="pie-chart"></i>
+        <span class="nav-label">Податки</span>
       </div>
     </nav>
 
-    <!-- ===== TOAST CONTAINER ===== -->
-    <div class="toast-container" id="toast-container"></div>
-
+    <div id="toast-container" style="position:fixed; bottom:85px; left:50%; transform:translateX(-50%); z-index:9999;"></div>
   </div>
-
   <script src="client.js"></script>
 </body>
 </html>
