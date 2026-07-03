@@ -9,7 +9,6 @@ import config
 from database.base import engine, Base
 from handlers import common, cabinet, form, calculator, admin, admin_start
 from services.web_server import app
-from services.email_monitor import email_monitor_loop
 from services.tunnel import start_tunnel, stop_tunnel
 
 # Налаштування логування
@@ -105,13 +104,11 @@ async def main():
             admin_dp.start_polling(admin_bot, user_bot=user_bot, allowed_updates=admin_dp.resolve_used_update_types()),
             # Веб-сервер FastAPI
             start_web_server(),
-            # Моніторинг пошти (сповіщення через admin_bot)
-            email_monitor_loop(admin_bot),
             return_exceptions=True
         )
 
         # Логуємо помилки задач, якщо вони були
-        task_names = ["UserBot Polling", "AdminBot Polling", "WebServer", "EmailMonitor"]
+        task_names = ["UserBot Polling", "AdminBot Polling", "WebServer"]
         for i, result in enumerate(results):
             if isinstance(result, Exception):
                 logger.error(f"Задача {task_names[i]} завершилась з помилкою: {result}")
