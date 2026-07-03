@@ -118,6 +118,10 @@ async def receive_web_lead(
         except Exception as e:
             logging.error(f"Помилка читання JSON data: {e}")
 
+    # Виводимо отриманий вебхук у лог для налагодження
+    logging.info(f"⚡ [WEBHOOK] Отримано запит з сайту. Content-Type: {content_type}")
+    logging.info(f"⚡ [WEBHOOK] Всі розпарсені поля: {all_fields}")
+
     # Спроба знайти поля за назвами ключів
     for k, v in all_fields.items():
         if not isinstance(v, str):
@@ -127,10 +131,17 @@ async def receive_web_lead(
             continue
             
         k_lower = k.lower()
+        
+        # Ігноруємо технічні метадані Elementor
+        if k_lower in ["form_name", "form_id", "post_id"]:
+            continue
+            
         if "phone" in k_lower or "тел" in k_lower or "number" in k_lower:
             phone = v_val
         elif "name" in k_lower or "ім" in k_lower or "im" in k_lower:
-            name = v_val
+            # Уникаємо запису form_name як імені користувача
+            if "form" not in k_lower:
+                name = v_val
         elif "text" in k_lower or "mess" in k_lower or "пита" in k_lower or "ques" in k_lower or "зап" in k_lower:
             text = v_val
 
@@ -146,12 +157,15 @@ async def receive_web_lead(
                 phone = v_val
                 break
 
-    # Якщо ім'я не знайдено, беремо будь-яке коротке текстове поле, яке не є телефоном
+    # Якщо ім'я не знайдено, беремо будь-яке коротке текстове поле, яке не є телефоном і не метаданими
     if not name:
         for k, v in all_fields.items():
             if not isinstance(v, str):
                 continue
             v_val = v.strip()
+            k_lower = k.lower()
+            if k_lower in ["form_name", "form_id", "post_id"] or "form" in k_lower:
+                continue
             if v_val == phone or not v_val:
                 continue
             if len(v_val) < 40 and v_val != text:
@@ -164,6 +178,9 @@ async def receive_web_lead(
             if not isinstance(v, str):
                 continue
             v_val = v.strip()
+            k_lower = k.lower()
+            if k_lower in ["form_name", "form_id", "post_id"] or "form" in k_lower:
+                continue
             if v_val == phone or v_val == name or not v_val:
                 continue
             text = v_val
