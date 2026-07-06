@@ -254,7 +254,7 @@ function renderAdminRequestCard(req) {
       <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:4px;">
         ${escapeHtml(req.name || 'Без імені')}
       </div>
-      ${phone ? `<a href="tel:${phone}" style="font-size:12px; color:#aa4b70; text-decoration:none; display:inline-block; margin-bottom:8px; font-weight:500;">${phone}</a>` : ''}
+      ${phone ? `<a href="#" onclick="copyPhoneToClipboard(event, '${req.phone}')" style="font-size:12px; color:#aa4b70; text-decoration:none; display:inline-block; margin-bottom:8px; font-weight:500; cursor:pointer;">${phone} 📋</a>` : ''}
       <div style="font-size:13px; color:#334155; line-height:1.5; margin-bottom:12px; word-break:break-word;">
         ${escapeHtml(req.text || 'Без опису')}
       </div>
@@ -324,7 +324,7 @@ function renderSwipeCards() {
               <span>${date} о ${time}</span>
             </div>
             <h3 style="font-size:16px; font-weight:700; margin-bottom:4px; color:#0f172a;">${escapeHtml(req.name || 'Без імені')}</h3>
-            ${phone ? `<a href="tel:${phone}" style="font-size:12px; color:#aa4b70; text-decoration:none; display:inline-block; margin-bottom:8px; font-weight:500;">${phone}</a>` : ''}
+            ${phone ? `<a href="#" onclick="copyPhoneToClipboard(event, '${req.phone}')" style="font-size:12px; color:#aa4b70; text-decoration:none; display:inline-block; margin-bottom:8px; font-weight:500; cursor:pointer;">${phone} 📋</a>` : ''}
             <p style="font-size:13px; color:#475569; line-height:1.5; margin-top:6px; word-break:break-word;">
               ${escapeHtml(textToShow)}
             </p>
@@ -609,7 +609,14 @@ function openReplyModal(requestId) {
   
   const err = document.getElementById('error-reply-text');
   if (err) err.classList.remove('visible');
-  document.getElementById('reply-text-input').value = '';
+  
+  const inputEl = document.getElementById('reply-text-input');
+  if (inputEl) {
+    inputEl.value = '';
+    setTimeout(() => {
+      inputEl.focus();
+    }, 100);
+  }
 }
 
 function closeReplyModal() {
@@ -649,8 +656,9 @@ function openFullDetailsModal(requestId) {
   const phoneContainer = document.getElementById('details-phone-container');
   if (phoneEl && phoneContainer) {
     if (phone) {
-      phoneEl.textContent = phone;
-      phoneEl.href = `tel:${phone}`;
+      phoneEl.textContent = `${phone} 📋`;
+      phoneEl.href = '#';
+      phoneEl.onclick = (e) => copyPhoneToClipboard(e, req.phone);
       phoneContainer.style.display = 'block';
     } else {
       phoneContainer.style.display = 'none';
@@ -746,4 +754,23 @@ function showToast(msg) {
   el.textContent = msg;
   container.appendChild(el);
   setTimeout(() => el.remove(), 2500);
+}
+
+function copyPhoneToClipboard(e, phoneStr) {
+  if (e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  const cleanPhone = '+' + phoneStr.replace(/[^\d]/g, '');
+  navigator.clipboard.writeText(cleanPhone).then(() => {
+    showToast('Номер телефону скопійовано! 📋');
+  }).catch(() => {
+    const el = document.createElement('textarea');
+    el.value = cleanPhone;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast('Номер телефону скопійовано! 📋');
+  });
 }

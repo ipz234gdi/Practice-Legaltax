@@ -437,6 +437,9 @@ html, body {
   resize: none;
   min-height: 80px;
   overflow-y: hidden;
+  pointer-events: auto !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
 }
 
 .form-input:focus, .form-textarea:focus, .control-select:focus {
@@ -806,6 +809,7 @@ button:disabled {
   width: 100%;
   max-width: 360px;
   box-shadow: var(--shadow-md);
+  pointer-events: auto !important;
 }
 
 .modal-actions {
