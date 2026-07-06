@@ -351,9 +351,32 @@ async def twa_get_user_info(user_id: int):
     """
     Повертає інформацію про користувача для Telegram Mini App
     """
+    from config import ADMIN_IDS
+    is_admin = user_id in ADMIN_IDS
+
     async with SessionLocal() as session:
         user = await get_user_by_id(session, user_id)
         if not user:
+            if is_admin:
+                return {
+                    "status": "ok",
+                    "is_admin": True,
+                    "user": {
+                        "id": user_id,
+                        "username": None,
+                        "first_name": "Адміністратор",
+                        "last_name": None,
+                        "phone": None,
+                        "created_at": None
+                    },
+                    "stats": {
+                        "pending": 0,
+                        "in_progress": 0,
+                        "completed": 0,
+                        "rejected": 0,
+                        "total": 0
+                    }
+                }
             return {"status": "not_found"}
 
         stats_query = await session.execute(
@@ -363,10 +386,9 @@ async def twa_get_user_info(user_id: int):
         )
         stats = {row[0]: row[1] for row in stats_query.all()}
 
-    from config import ADMIN_IDS
     return {
         "status": "ok",
-        "is_admin": user_id in ADMIN_IDS,
+        "is_admin": is_admin,
         "user": {
             "id": user.id,
             "username": user.username,
