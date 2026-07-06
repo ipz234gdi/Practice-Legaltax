@@ -122,6 +122,23 @@ async def receive_web_lead(
     logging.info(f"⚡ [WEBHOOK] Отримано запит з сайту. Content-Type: {content_type}")
     logging.info(f"⚡ [WEBHOOK] Всі розпарсені поля: {all_fields}")
 
+    # Перевірка на Honeypot (антиспам)
+    # Якщо заповнено поле website (або інші типові приховані поля для спаму), ігноруємо запит
+    honeypot_triggered = False
+    for hp_key in ["website", "email_confirm", "honeypot"]:
+        for k, v in all_fields.items():
+            if hp_key in k.lower():
+                v_str = str(v).strip()
+                if v_str: # Якщо поле заповнене хоч якимось текстом - це бот!
+                    honeypot_triggered = True
+                    logging.warning(f"⚠️ [WEBHOOK] [SPAM DETECTED] Виявлено спам-бота! Поле {k} заповнене значенням: '{v_str}'")
+                    break
+        if honeypot_triggered:
+            break
+
+    if honeypot_triggered:
+        return {"status": "spam_blocked", "message": "Spam request ignored."}
+
     # Спроба знайти поля за назвами ключів
     for k, v in all_fields.items():
         if not isinstance(v, str):

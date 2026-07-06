@@ -254,7 +254,7 @@ function renderAdminRequestCard(req) {
       <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:4px;">
         ${escapeHtml(req.name || 'Без імені')}
       </div>
-      ${phone ? `<a href="#" onclick="copyPhoneToClipboard(event, '${req.phone}')" style="font-size:12px; color:#aa4b70; text-decoration:none; display:inline-block; margin-bottom:8px; font-weight:500; cursor:pointer;">${phone} 📋</a>` : ''}
+      ${phone ? `<a href="#" onclick="copyPhoneToClipboard(event, '${req.phone}')" style="font-size:12px; color:#aa4b70; text-decoration:none; display:inline-flex; align-items:center; gap:4px; margin-bottom:8px; font-weight:500; cursor:pointer;">${phone} <i data-lucide="copy" style="width:12px; height:12px;"></i></a>` : ''}
       <div style="font-size:13px; color:#334155; line-height:1.5; margin-bottom:12px; word-break:break-word;">
         ${escapeHtml(req.text || 'Без опису')}
       </div>
@@ -324,7 +324,7 @@ function renderSwipeCards() {
               <span>${date} о ${time}</span>
             </div>
             <h3 style="font-size:16px; font-weight:700; margin-bottom:4px; color:#0f172a;">${escapeHtml(req.name || 'Без імені')}</h3>
-            ${phone ? `<a href="#" onclick="copyPhoneToClipboard(event, '${req.phone}')" style="font-size:12px; color:#aa4b70; text-decoration:none; display:inline-block; margin-bottom:8px; font-weight:500; cursor:pointer;">${phone} 📋</a>` : ''}
+            ${phone ? `<a href="#" onclick="copyPhoneToClipboard(event, '${req.phone}')" style="font-size:12px; color:#aa4b70; text-decoration:none; display:inline-flex; align-items:center; gap:4px; margin-bottom:8px; font-weight:500; cursor:pointer;">${phone} <i data-lucide="copy" style="width:12px; height:12px;"></i></a>` : ''}
             <p style="font-size:13px; color:#475569; line-height:1.5; margin-top:6px; word-break:break-word;">
               ${escapeHtml(textToShow)}
             </p>
@@ -656,7 +656,10 @@ function openFullDetailsModal(requestId) {
   const phoneContainer = document.getElementById('details-phone-container');
   if (phoneEl && phoneContainer) {
     if (phone) {
-      phoneEl.textContent = `${phone} 📋`;
+      phoneEl.innerHTML = `${phone} <i data-lucide="copy" style="width:12px; height:12px; display:inline-block; vertical-align:middle; margin-left:4px;"></i>`;
+      phoneEl.style.display = 'inline-flex';
+      phoneEl.style.alignItems = 'center';
+      phoneEl.style.gap = '4px';
       phoneEl.href = '#';
       phoneEl.onclick = (e) => copyPhoneToClipboard(e, req.phone);
       phoneContainer.style.display = 'block';
@@ -676,6 +679,7 @@ function openFullDetailsModal(requestId) {
   }
 
   document.getElementById('details-modal').classList.add('active');
+  try { lucide.createIcons(); } catch (e) {}
   isSwipeProcessing = true;
 }
 
